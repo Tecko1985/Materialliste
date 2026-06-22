@@ -458,6 +458,11 @@ function populateListeFilters() {
   kategorieSelect.value = prevKategorie;
   standortSelect.value = prevStandort;
   mannschaftSelect.value = prevMannschaft;
+
+  const jumpSelect = document.getElementById("liste-jump-select");
+  jumpSelect.innerHTML = '<option value="">Wählen…</option>' +
+    appData.teams.slice().sort((a, b) => compareTeamNames(a.name, b.name))
+      .map((t) => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)}</option>`).join("");
 }
 
 function filteredSortedMaterials() {
@@ -542,6 +547,13 @@ function setupListeFilters() {
     listeMannschaftFilter = e.target.value;
     renderListe();
   });
+  document.getElementById("liste-jump-select").addEventListener("change", (e) => {
+    const name = e.target.value;
+    if (!name) return;
+    const target = document.querySelector(`.material-group[data-mannschaft="${CSS.escape(name)}"]`);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    e.target.value = "";
+  });
   document.getElementById("liste-sort-select").addEventListener("change", (e) => {
     listeSortOrder = e.target.value;
     renderListe();
@@ -584,7 +596,7 @@ function renderListe() {
 
   const groups = groupByMannschaft(list);
   container.innerHTML = groups.map((g) => `
-    <div class="material-group">
+    <div class="material-group" data-mannschaft="${escapeHtml(g.mannschaft)}">
       <div class="material-group-title">${escapeHtml(g.mannschaft || "Ohne Mannschaft")} (${g.items.length})</div>
       <div class="material-edit-row material-edit-header">
         <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Zustand</span><span></span>

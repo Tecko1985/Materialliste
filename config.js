@@ -1,6 +1,17 @@
-const APP_VERSION = "1.9.3";
+const APP_VERSION = "1.9.4";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9.4",
+    groups: [
+      {
+        title: "Materialliste",
+        items: [
+          "Neues Dropdown \"Springe zu Mannschaft\" oberhalb der Liste – springt direkt zur entsprechenden Mannschaftsgruppe."
+        ]
+      }
+    ]
+  },
   {
     version: "1.9.3",
     groups: [
