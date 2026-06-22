@@ -1,6 +1,18 @@
-const APP_VERSION = "1.4";
+const APP_VERSION = "1.5";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.5",
+    groups: [
+      {
+        title: "Fehlerbehebung",
+        items: [
+          "Beim Hinzufügen erscheint jetzt ein Hinweis, wenn nichts übernommen werden konnte (z.B. fehlender Name oder keine Trikot-Nummer/Menge bei Trikotsatz), statt dass scheinbar gar nichts passiert.",
+          "Pflichtfeld-Validierung für Name wird jetzt per JavaScript statt über das (teils verstecke) HTML-Attribut geprüft."
+        ]
+      }
+    ]
+  },
   {
     version: "1.4",
     groups: [

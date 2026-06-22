@@ -750,6 +750,10 @@ function setupMaterialForm() {
         });
         addedAny = true;
       }
+      if (!addedAny) {
+        alert("Bitte mindestens eine Trikot-Nummer auswählen oder eine Hosen-/Stutzenanzahl eintragen.");
+        return;
+      }
     } else if (baelle) {
       appData.materials.push({
         id: uuid(),
@@ -777,19 +781,21 @@ function setupMaterialForm() {
       addedAny = true;
     } else {
       const name = document.getElementById("m-name").value.trim();
-      if (name) {
-        appData.materials.push({
-          id: uuid(),
-          name,
-          kategorie: document.getElementById("m-kategorie").value.trim(),
-          mannschaft: mannschaftSelected,
-          menge: document.getElementById("m-menge").value,
-          einheit: document.getElementById("m-einheit").value.trim(),
-          standort: document.getElementById("m-standort").value.trim(),
-          zustand: document.getElementById("m-zustand").value.trim()
-        });
-        addedAny = true;
+      if (!name) {
+        alert("Bitte einen Namen eingeben.");
+        return;
       }
+      appData.materials.push({
+        id: uuid(),
+        name,
+        kategorie: document.getElementById("m-kategorie").value.trim(),
+        mannschaft: mannschaftSelected,
+        menge: document.getElementById("m-menge").value,
+        einheit: document.getElementById("m-einheit").value.trim(),
+        standort: document.getElementById("m-standort").value.trim(),
+        zustand: document.getElementById("m-zustand").value.trim()
+      });
+      addedAny = true;
     }
 
     if (!addedAny) return;
