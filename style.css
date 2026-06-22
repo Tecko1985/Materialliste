@@ -180,13 +180,34 @@ table tr:hover td { background: var(--gray); }
   font-weight: 700;
   color: var(--blue);
   padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 .satz-group summary::-webkit-details-marker { display: none; }
 .satz-group summary::before { content: "▸ "; color: var(--gold); }
 .satz-group[open] summary::before { content: "▾ "; }
+.satz-trainer-input {
+  font-weight: 400;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--text);
+  max-width: 180px;
+}
 .satz-group .material-edit-header { margin-top: 8px; }
 .satz-group .player-grid { margin-top: 6px; }
 .satz-group .material-edit-row { background: var(--white); }
+.satz-group .material-edit-row.no-trainer,
+.satz-group .material-edit-header.no-trainer {
+  grid-template-columns: 1.3fr 0.9fr 0.9fr 0.6fr 1.1fr auto;
+}
+@media (max-width: 800px) {
+  .satz-group .material-edit-row.no-trainer { grid-template-columns: 1fr 1fr; }
+}
 
 .material-group { margin-bottom: 22px; }
 .material-group:last-child { margin-bottom: 0; }

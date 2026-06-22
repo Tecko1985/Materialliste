@@ -10,7 +10,7 @@ const APP_CHANGELOG = [
           "Übersicht gruppiert nach Mannschaft, alle Felder (Name, Kategorie, Mannschaft, Menge, Trainer, Zustand) direkt anklicken und bearbeiten.",
           "Suche nach Name sowie Filter nach Mannschaft, Kategorie und Standort, dazu Sortieren nach Name oder Menge.",
           "\"Springe zu Mannschaft\"-Dropdown springt direkt zur entsprechenden Mannschaftsgruppe.",
-          "Trikotsätze (Trikot, Hose, Stutzen) werden als ein aufklappbarer Satz angezeigt, einzelne Teile bleiben separat bearbeitbar.",
+          "Trikotsätze (Trikot, Hose, Stutzen) werden als ein aufklappbarer Satz angezeigt, einzelne Teile bleiben separat bearbeitbar; der Trainer steht dabei einmal beim Satz (nicht je Teil) und ist dort direkt editierbar.",
           "Materialliste komplett löschen (mit doppelter Sicherheitsabfrage) – Mannschaften bleiben dabei erhalten."
         ]
       },

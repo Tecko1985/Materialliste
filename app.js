@@ -563,14 +563,15 @@ function setupListeFilters() {
   });
 }
 
-function materialRowHtml(m) {
+function materialRowHtml(m, opts = {}) {
+  const showTrainer = opts.showTrainer !== false;
   return `
-    <div class="material-edit-row" data-id="${m.id}">
+    <div class="material-edit-row${showTrainer ? "" : " no-trainer"}" data-id="${m.id}">
       <input type="text" data-field="name" value="${escapeHtml(m.name)}" />
       <input type="text" data-field="kategorie" value="${escapeHtml(m.kategorie)}" />
       <select data-field="mannschaft">${teamOptionsHtml(m.mannschaft)}</select>
       <input type="number" data-field="menge" value="${escapeHtml(m.menge)}" />
-      <input type="text" data-field="trainer" value="${escapeHtml(m.trainer)}" placeholder="Trainer" />
+      ${showTrainer ? `<input type="text" data-field="trainer" value="${escapeHtml(m.trainer)}" placeholder="Trainer" />` : ""}
       <input type="text" data-field="zustand" value="${escapeHtml(m.zustand)}" />
       <div class="row-actions">
         <button class="btn danger small" data-action="delete">Löschen</button>
@@ -580,13 +581,17 @@ function materialRowHtml(m) {
 }
 
 function satzRowHtml(satz) {
+  const trainerValue = (satz.items[0] && satz.items[0].trainer) || "";
   return `
     <details class="satz-group">
-      <summary>🎽 ${escapeHtml(satz.label || "Trikotsatz")} <span class="muted">(Satz · ${satz.items.length} Teile)</span></summary>
-      <div class="material-edit-row material-edit-header">
-        <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Trainer</span><span>Zustand</span><span></span>
+      <summary>
+        🎽 ${escapeHtml(satz.label || "Trikotsatz")} <span class="muted">(Satz · ${satz.items.length} Teile)</span>
+        <input type="text" class="satz-trainer-input" data-satz-id="${escapeHtml(satz.satzId)}" value="${escapeHtml(trainerValue)}" placeholder="Trainer" />
+      </summary>
+      <div class="material-edit-row material-edit-header no-trainer">
+        <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Zustand</span><span></span>
       </div>
-      <div class="player-grid">${satz.items.map(materialRowHtml).join("")}</div>
+      <div class="player-grid">${satz.items.map((m) => materialRowHtml(m, { showTrainer: false })).join("")}</div>
     </details>
   `;
 }
@@ -609,8 +614,12 @@ function renderListe() {
     </div>
   `).join("");
 
-  container.querySelectorAll("input, select").forEach((input) => {
+  container.querySelectorAll("input:not(.satz-trainer-input), select").forEach((input) => {
     input.addEventListener("change", () => commitMaterialEdit(input));
+  });
+  container.querySelectorAll(".satz-trainer-input").forEach((input) => {
+    input.addEventListener("click", (e) => e.stopPropagation());
+    input.addEventListener("change", () => commitSatzTrainerEdit(input));
   });
   container.querySelectorAll('[data-action="delete"]').forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -618,6 +627,15 @@ function renderListe() {
       deleteMaterial(id);
     });
   });
+}
+
+function commitSatzTrainerEdit(input) {
+  const satzId = input.dataset.satzId;
+  const value = input.value.trim();
+  appData.materials.forEach((m) => {
+    if (m.satzId === satzId) m.trainer = value;
+  });
+  persist();
 }
 
 function commitMaterialEdit(input) {
