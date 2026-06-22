@@ -9,7 +9,6 @@ let saveTimer = null;
 
 let listeSearchQuery = "";
 let listeKategorieFilter = "";
-let listeStandortFilter = "";
 let listeMannschaftFilter = "";
 let listeSortOrder = "name-asc";
 
@@ -447,25 +446,15 @@ function uniqueValues(field) {
 
 function populateListeFilters() {
   const kategorieSelect = document.getElementById("liste-kategorie-filter");
-  const standortSelect = document.getElementById("liste-standort-filter");
   const mannschaftSelect = document.getElementById("liste-mannschaft-filter");
   const prevKategorie = kategorieSelect.value;
-  const prevStandort = standortSelect.value;
   const prevMannschaft = mannschaftSelect.value;
   kategorieSelect.innerHTML = '<option value="">Alle Kategorien</option>' +
     uniqueValues("kategorie").map((k) => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join("");
-  standortSelect.innerHTML = '<option value="">Alle Standorte</option>' +
-    uniqueValues("standort").map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
   mannschaftSelect.innerHTML = '<option value="">Alle Mannschaften</option>' +
     uniqueValues("mannschaft").map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
   kategorieSelect.value = prevKategorie;
-  standortSelect.value = prevStandort;
   mannschaftSelect.value = prevMannschaft;
-
-  const jumpSelect = document.getElementById("liste-jump-select");
-  jumpSelect.innerHTML = '<option value="">Wählen…</option>' +
-    appData.teams.slice().sort((a, b) => compareTeamNames(a.name, b.name))
-      .map((t) => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)}</option>`).join("");
 }
 
 function filteredSortedMaterials() {
@@ -475,7 +464,6 @@ function filteredSortedMaterials() {
     list = list.filter((m) => (m.name || "").toLowerCase().includes(q));
   }
   if (listeKategorieFilter) list = list.filter((m) => m.kategorie === listeKategorieFilter);
-  if (listeStandortFilter) list = list.filter((m) => m.standort === listeStandortFilter);
   if (listeMannschaftFilter) list = list.filter((m) => m.mannschaft === listeMannschaftFilter);
   list.sort((a, b) => {
     if (listeSortOrder === "name-asc") return (a.name || "").localeCompare(b.name || "", "de");
@@ -542,20 +530,9 @@ function setupListeFilters() {
     listeKategorieFilter = e.target.value;
     renderListe();
   });
-  document.getElementById("liste-standort-filter").addEventListener("change", (e) => {
-    listeStandortFilter = e.target.value;
-    renderListe();
-  });
   document.getElementById("liste-mannschaft-filter").addEventListener("change", (e) => {
     listeMannschaftFilter = e.target.value;
     renderListe();
-  });
-  document.getElementById("liste-jump-select").addEventListener("change", (e) => {
-    const name = e.target.value;
-    if (!name) return;
-    const target = document.querySelector(`.material-group[data-mannschaft="${CSS.escape(name)}"]`);
-    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-    e.target.value = "";
   });
   document.getElementById("liste-sort-select").addEventListener("change", (e) => {
     listeSortOrder = e.target.value;
