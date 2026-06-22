@@ -75,11 +75,12 @@ function teamOptionsHtml(selected) {
 }
 
 function populateMannschaftSelects() {
-  const addSelect = document.getElementById("m-mannschaft");
-  if (addSelect) {
-    const prev = addSelect.value;
-    addSelect.innerHTML = teamOptionsHtml(prev);
-  }
+  ["m-mannschaft", "mb-mannschaft", "ml-mannschaft", "mt-mannschaft"].forEach((id) => {
+    const select = document.getElementById(id);
+    if (!select) return;
+    const prev = select.value;
+    select.innerHTML = teamOptionsHtml(prev);
+  });
 }
 
 // ---------- Persistenz ----------
@@ -638,24 +639,143 @@ function deleteTeam(id) {
 
 // ---------- Hinzufügen ----------
 
+function buildTrikotNumberGrid() {
+  const grid = document.getElementById("trikot-number-grid");
+  if (!grid || grid.children.length > 0) return;
+  let html = "";
+  for (let n = 1; n <= 40; n++) {
+    html += `<label><input type="checkbox" data-num="${n}" /> ${n}</label>`;
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.addEventListener("change", () => {
+      cb.closest("label").classList.toggle("checked", cb.checked);
+    });
+  });
+}
+
+function updateMaterialTypeVisibility() {
+  const chkTrikot = document.getElementById("chk-trikotsatz");
+  const chkBaelle = document.getElementById("chk-baelle");
+  const chkLeibchen = document.getElementById("chk-leibchen");
+  const trikot = chkTrikot.checked;
+
+  document.getElementById("mtype-baelle-label").style.display = trikot ? "none" : "";
+  document.getElementById("mtype-leibchen-label").style.display = trikot ? "none" : "";
+  if (trikot) {
+    chkBaelle.checked = false;
+    chkLeibchen.checked = false;
+  }
+
+  document.getElementById("mform-trikotsatz").style.display = trikot ? "block" : "none";
+  document.getElementById("mform-baelle").style.display = !trikot && chkBaelle.checked ? "grid" : "none";
+  document.getElementById("mform-leibchen").style.display = !trikot && chkLeibchen.checked ? "grid" : "none";
+  document.getElementById("mform-generic").style.display = !trikot && !chkBaelle.checked && !chkLeibchen.checked ? "grid" : "none";
+}
+
+function setupMaterialTypeToggle() {
+  ["chk-trikotsatz", "chk-baelle", "chk-leibchen"].forEach((id) => {
+    document.getElementById(id).addEventListener("change", updateMaterialTypeVisibility);
+  });
+  updateMaterialTypeVisibility();
+}
+
 function setupMaterialForm() {
+  buildTrikotNumberGrid();
+  setupMaterialTypeToggle();
+
   document.getElementById("material-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = document.getElementById("m-name").value.trim();
-    if (!name) return;
-    appData.materials.push({
-      id: uuid(),
-      name,
-      kategorie: document.getElementById("m-kategorie").value.trim(),
-      mannschaft: document.getElementById("m-mannschaft").value.trim(),
-      menge: document.getElementById("m-menge").value,
-      einheit: document.getElementById("m-einheit").value.trim(),
-      standort: document.getElementById("m-standort").value.trim(),
-      zustand: document.getElementById("m-zustand").value.trim()
-    });
+    const trikot = document.getElementById("chk-trikotsatz").checked;
+    const baelle = document.getElementById("chk-baelle").checked;
+    const leibchen = document.getElementById("chk-leibchen").checked;
+    let addedAny = false;
+
+    if (trikot) {
+      const mannschaft = document.getElementById("mt-mannschaft").value.trim();
+      const bezeichnung = document.getElementById("mt-bezeichnung").value.trim();
+      const standort = document.getElementById("mt-standort").value.trim();
+      const zustand = document.getElementById("mt-zustand").value.trim();
+      const numbers = Array.from(document.querySelectorAll('#trikot-number-grid input[type="checkbox"]:checked')).map((c) => c.dataset.num);
+      const hosen = document.getElementById("mt-hosen").value;
+      const stutzen = document.getElementById("mt-stutzen").value;
+
+      if (numbers.length > 0) {
+        appData.materials.push({
+          id: uuid(),
+          name: ["Trikot", bezeichnung].filter(Boolean).join(" "),
+          kategorie: "Trikot",
+          mannschaft,
+          menge: String(numbers.length),
+          einheit: "Stk",
+          standort,
+          zustand: [zustand, "Nr. " + numbers.join(", ")].filter(Boolean).join(" / ")
+        });
+        addedAny = true;
+      }
+      if (hosen && Number(hosen) > 0) {
+        appData.materials.push({
+          id: uuid(), name: ["Hose", bezeichnung].filter(Boolean).join(" "), kategorie: "Hose",
+          mannschaft, menge: hosen, einheit: "Stk", standort, zustand
+        });
+        addedAny = true;
+      }
+      if (stutzen && Number(stutzen) > 0) {
+        appData.materials.push({
+          id: uuid(), name: ["Stutzen", bezeichnung].filter(Boolean).join(" "), kategorie: "Stutzen",
+          mannschaft, menge: stutzen, einheit: "Stk", standort, zustand
+        });
+        addedAny = true;
+      }
+    } else if (baelle) {
+      appData.materials.push({
+        id: uuid(),
+        name: "Bälle",
+        kategorie: "Sportgerät",
+        mannschaft: document.getElementById("mb-mannschaft").value.trim(),
+        menge: document.getElementById("mb-menge").value,
+        einheit: "Stk",
+        standort: document.getElementById("mb-standort").value.trim(),
+        zustand: document.getElementById("mb-zustand").value.trim()
+      });
+      addedAny = true;
+    } else if (leibchen) {
+      const farbe = document.getElementById("ml-farbe").value.trim();
+      appData.materials.push({
+        id: uuid(),
+        name: ["Leibchen", farbe].filter(Boolean).join(" "),
+        kategorie: "Leibchen",
+        mannschaft: document.getElementById("ml-mannschaft").value.trim(),
+        menge: document.getElementById("ml-menge").value,
+        einheit: "Stk",
+        standort: document.getElementById("ml-standort").value.trim(),
+        zustand: document.getElementById("ml-zustand").value.trim()
+      });
+      addedAny = true;
+    } else {
+      const name = document.getElementById("m-name").value.trim();
+      if (name) {
+        appData.materials.push({
+          id: uuid(),
+          name,
+          kategorie: document.getElementById("m-kategorie").value.trim(),
+          mannschaft: document.getElementById("m-mannschaft").value.trim(),
+          menge: document.getElementById("m-menge").value,
+          einheit: document.getElementById("m-einheit").value.trim(),
+          standort: document.getElementById("m-standort").value.trim(),
+          zustand: document.getElementById("m-zustand").value.trim()
+        });
+        addedAny = true;
+      }
+    }
+
+    if (!addedAny) return;
+
     persist();
     renderListe();
     e.target.reset();
+    document.querySelectorAll("#trikot-number-grid label.checked").forEach((l) => l.classList.remove("checked"));
+    updateMaterialTypeVisibility();
     document.getElementById("m-name").focus();
   });
 }

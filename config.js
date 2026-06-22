@@ -1,6 +1,19 @@
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.3";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.3",
+    groups: [
+      {
+        title: "Hinzufügen",
+        items: [
+          "Material hinzufügen jetzt mit Art-Auswahl: Trikotsatz, Bälle oder Leibchen per Checkbox.",
+          "Bei Trikotsatz: Trikot-Nummern 1–40 per Checkbox auswählen, Hosen und Stutzen über Mengenfeld.",
+          "Ist Trikotsatz ausgewählt, verschwinden die Checkboxen für Bälle und Leibchen."
+        ]
+      }
+    ]
+  },
   {
     version: "1.2",
     groups: [
