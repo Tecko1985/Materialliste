@@ -762,23 +762,26 @@ function updateMaterialTypeVisibility() {
   const chkTrikot = document.getElementById("chk-trikotsatz");
   const chkBaelle = document.getElementById("chk-baelle");
   const chkLeibchen = document.getElementById("chk-leibchen");
+  const chkSonstiges = document.getElementById("chk-sonstiges");
   const trikot = chkTrikot.checked;
 
   document.getElementById("mtype-baelle-label").style.display = trikot ? "none" : "";
   document.getElementById("mtype-leibchen-label").style.display = trikot ? "none" : "";
+  document.getElementById("mtype-sonstiges-label").style.display = trikot ? "none" : "";
   if (trikot) {
     chkBaelle.checked = false;
     chkLeibchen.checked = false;
+    chkSonstiges.checked = false;
   }
 
   document.getElementById("mform-trikotsatz").style.display = trikot ? "block" : "none";
   document.getElementById("mform-baelle").style.display = !trikot && chkBaelle.checked ? "grid" : "none";
   document.getElementById("mform-leibchen").style.display = !trikot && chkLeibchen.checked ? "grid" : "none";
-  document.getElementById("mform-generic").style.display = !trikot && !chkBaelle.checked && !chkLeibchen.checked ? "grid" : "none";
+  document.getElementById("mform-generic").style.display = !trikot && chkSonstiges.checked ? "grid" : "none";
 }
 
 function setupMaterialTypeToggle() {
-  ["chk-trikotsatz", "chk-baelle", "chk-leibchen"].forEach((id) => {
+  ["chk-trikotsatz", "chk-baelle", "chk-leibchen", "chk-sonstiges"].forEach((id) => {
     document.getElementById(id).addEventListener("change", updateMaterialTypeVisibility);
   });
   updateMaterialTypeVisibility();
@@ -795,6 +798,7 @@ function setupMaterialForm() {
     const trikot = document.getElementById("chk-trikotsatz").checked;
     const baelle = document.getElementById("chk-baelle").checked;
     const leibchen = document.getElementById("chk-leibchen").checked;
+    const sonstiges = document.getElementById("chk-sonstiges").checked;
     const mannschaftSelected = getSelectedMannschaft();
     let addedAny = false;
 
@@ -883,7 +887,7 @@ function setupMaterialForm() {
         zustand: document.getElementById("ml-zustand").value.trim()
       });
       addedAny = true;
-    } else {
+    } else if (sonstiges) {
       const name = document.getElementById("m-name").value.trim();
       if (!name) {
         alert("Bitte einen Namen eingeben.");
@@ -900,6 +904,9 @@ function setupMaterialForm() {
         zustand: document.getElementById("m-zustand").value.trim()
       });
       addedAny = true;
+    } else {
+      alert("Bitte eine Art auswählen (Trikotsatz, Bälle, Leibchen oder Sonstiges).");
+      return;
     }
 
     if (!addedAny) return;

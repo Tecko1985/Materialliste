@@ -1,6 +1,17 @@
-const APP_VERSION = "1.9.6";
+const APP_VERSION = "1.9.7";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9.7",
+    groups: [
+      {
+        title: "Hinzufügen",
+        items: [
+          "Neue Checkbox \"Sonstiges\" neben Bälle/Leibchen für alle Material-Arten, die nicht Trikotsatz, Bälle oder Leibchen sind."
+        ]
+      }
+    ]
+  },
   {
     version: "1.9.6",
     groups: [
