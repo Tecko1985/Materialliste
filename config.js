@@ -1,6 +1,17 @@
-const APP_VERSION = "1.3";
+const APP_VERSION = "1.4";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.4",
+    groups: [
+      {
+        title: "Hinzufügen",
+        items: [
+          "Mannschaft-Auswahl beim Hinzufügen jetzt per Checkbox statt Dropdown (eine Mannschaft auswählbar)."
+        ]
+      }
+    ]
+  },
   {
     version: "1.3",
     groups: [

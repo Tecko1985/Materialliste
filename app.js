@@ -74,12 +74,34 @@ function teamOptionsHtml(selected) {
   return options.map((o) => `<option value="${escapeHtml(o.value)}" ${o.value === selected ? "selected" : ""}>${escapeHtml(o.label)}</option>`).join("");
 }
 
-function populateMannschaftSelects() {
-  ["m-mannschaft", "mb-mannschaft", "ml-mannschaft", "mt-mannschaft"].forEach((id) => {
-    const select = document.getElementById(id);
-    if (!select) return;
-    const prev = select.value;
-    select.innerHTML = teamOptionsHtml(prev);
+function getSelectedMannschaft() {
+  const grid = document.getElementById("mannschaft-checkbox-grid");
+  if (!grid) return "";
+  const checked = grid.querySelector('input[type="checkbox"]:checked');
+  return checked ? checked.dataset.name : "";
+}
+
+function renderMannschaftCheckboxes() {
+  const grid = document.getElementById("mannschaft-checkbox-grid");
+  if (!grid) return;
+  const prevSelected = getSelectedMannschaft();
+  const teams = appData.teams.slice().sort((a, b) => a.name.localeCompare(b.name, "de"));
+  grid.innerHTML = teams.map((t) => `
+    <label><input type="checkbox" data-name="${escapeHtml(t.name)}" ${t.name === prevSelected ? "checked" : ""} /> ${escapeHtml(t.name)}</label>
+  `).join("");
+  grid.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.closest("label").classList.toggle("checked", cb.checked);
+    cb.addEventListener("change", () => {
+      if (cb.checked) {
+        grid.querySelectorAll('input[type="checkbox"]').forEach((other) => {
+          if (other !== cb) {
+            other.checked = false;
+            other.closest("label").classList.remove("checked");
+          }
+        });
+      }
+      cb.closest("label").classList.toggle("checked", cb.checked);
+    });
   });
 }
 
@@ -371,7 +393,7 @@ function switchTab(tab) {
 
 function renderAll() {
   renderVersionInfo();
-  populateMannschaftSelects();
+  renderMannschaftCheckboxes();
   renderListe();
 }
 
@@ -558,7 +580,7 @@ function setupTeamForm() {
     appData.teams.push({ id: uuid(), name });
     persist();
     renderTeams();
-    populateMannschaftSelects();
+    renderMannschaftCheckboxes();
     e.target.reset();
     input.focus();
   });
@@ -616,7 +638,7 @@ function commitTeamEdit(input) {
   persist();
   renderTeams();
   renderListe();
-  populateMannschaftSelects();
+  renderMannschaftCheckboxes();
 }
 
 function deleteTeam(id) {
@@ -634,7 +656,7 @@ function deleteTeam(id) {
   persist();
   renderTeams();
   renderListe();
-  populateMannschaftSelects();
+  renderMannschaftCheckboxes();
 }
 
 // ---------- Hinzufügen ----------
@@ -689,10 +711,11 @@ function setupMaterialForm() {
     const trikot = document.getElementById("chk-trikotsatz").checked;
     const baelle = document.getElementById("chk-baelle").checked;
     const leibchen = document.getElementById("chk-leibchen").checked;
+    const mannschaftSelected = getSelectedMannschaft();
     let addedAny = false;
 
     if (trikot) {
-      const mannschaft = document.getElementById("mt-mannschaft").value.trim();
+      const mannschaft = mannschaftSelected;
       const bezeichnung = document.getElementById("mt-bezeichnung").value.trim();
       const standort = document.getElementById("mt-standort").value.trim();
       const zustand = document.getElementById("mt-zustand").value.trim();
@@ -732,7 +755,7 @@ function setupMaterialForm() {
         id: uuid(),
         name: "Bälle",
         kategorie: "Sportgerät",
-        mannschaft: document.getElementById("mb-mannschaft").value.trim(),
+        mannschaft: mannschaftSelected,
         menge: document.getElementById("mb-menge").value,
         einheit: "Stk",
         standort: document.getElementById("mb-standort").value.trim(),
@@ -745,7 +768,7 @@ function setupMaterialForm() {
         id: uuid(),
         name: ["Leibchen", farbe].filter(Boolean).join(" "),
         kategorie: "Leibchen",
-        mannschaft: document.getElementById("ml-mannschaft").value.trim(),
+        mannschaft: mannschaftSelected,
         menge: document.getElementById("ml-menge").value,
         einheit: "Stk",
         standort: document.getElementById("ml-standort").value.trim(),
@@ -759,7 +782,7 @@ function setupMaterialForm() {
           id: uuid(),
           name,
           kategorie: document.getElementById("m-kategorie").value.trim(),
-          mannschaft: document.getElementById("m-mannschaft").value.trim(),
+          mannschaft: mannschaftSelected,
           menge: document.getElementById("m-menge").value,
           einheit: document.getElementById("m-einheit").value.trim(),
           standort: document.getElementById("m-standort").value.trim(),
@@ -774,7 +797,7 @@ function setupMaterialForm() {
     persist();
     renderListe();
     e.target.reset();
-    document.querySelectorAll("#trikot-number-grid label.checked").forEach((l) => l.classList.remove("checked"));
+    document.querySelectorAll("#trikot-number-grid label.checked, #mannschaft-checkbox-grid label.checked").forEach((l) => l.classList.remove("checked"));
     updateMaterialTypeVisibility();
     document.getElementById("m-name").focus();
   });
@@ -992,7 +1015,7 @@ function setupSmartImport() {
     if (added > 0) {
       persist();
       renderListe();
-      populateMannschaftSelects();
+      renderMannschaftCheckboxes();
     }
     document.getElementById("smart-import-input").value = "";
     document.getElementById("smart-import-preview").style.display = "none";
