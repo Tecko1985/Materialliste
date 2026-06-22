@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#1a56a0" />
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="style.css?v=1.9" />
+<link rel="stylesheet" href="style.css?v=1.9.1" />
 </head>
 <body>
 
@@ -210,13 +210,15 @@
             <div class="form-field" style="margin-bottom:10px;">
               <label class="checkbox-label"><input type="checkbox" id="chk-hosen-nummern" /> Hosen haben Nummern</label>
             </div>
-            <div class="form-grid">
-              <div class="form-field" id="mt-hosen-field"><label>Hosen (Menge)</label><input type="number" id="mt-hosen" min="0" step="1" /></div>
-              <div class="form-field"><label>Stutzen (Menge)</label><input type="number" id="mt-stutzen" min="0" step="1" /></div>
+            <div class="form-grid" id="mt-hosen-field">
+              <div class="form-field"><label>Hosen (Menge)</label><input type="number" id="mt-hosen" min="0" step="1" /></div>
             </div>
-            <div class="form-field" id="hosen-nummern-wrap" style="display:none; margin-top:10px;">
+            <div class="form-field" id="hosen-nummern-wrap" style="display:none; margin-bottom:14px;">
               <label>Hosen-Nummern</label>
               <div class="number-grid" id="hosen-number-grid"></div>
+            </div>
+            <div class="form-grid">
+              <div class="form-field"><label>Stutzen (Menge)</label><input type="number" id="mt-stutzen" min="0" step="1" /></div>
             </div>
           </div>
 
@@ -318,8 +320,8 @@
   </main>
 </div>
 
-<script src="config.js?v=1.9"></script>
-<script src="db.js?v=1.9"></script>
-<script src="app.js?v=1.9"></script>
+<script src="config.js?v=1.9.1"></script>
+<script src="db.js?v=1.9.1"></script>
+<script src="app.js?v=1.9.1"></script>
 </body>
 </html>

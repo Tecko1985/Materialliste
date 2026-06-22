@@ -1,6 +1,17 @@
-const APP_VERSION = "1.9";
+const APP_VERSION = "1.9.1";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9.1",
+    groups: [
+      {
+        title: "Fehlerbehebung",
+        items: [
+          "Beim Aktivieren von \"Hosen haben Nummern\" rutscht das Stutzen-Feld jetzt korrekt unter das Nummern-Grid statt davor zu stehen."
+        ]
+      }
+    ]
+  },
   {
     version: "1.9",
     groups: [
