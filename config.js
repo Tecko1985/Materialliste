@@ -1,6 +1,19 @@
-const APP_VERSION = "1.9.9";
+const APP_VERSION = "1.9.10";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9.10",
+    groups: [
+      {
+        title: "Hinzufügen",
+        items: [
+          "Mannschaften bleiben wieder einfache Checkboxen ohne Trainer-Bindung (z.B. weiterhin nur eine Checkbox \"U9\").",
+          "\"Zuständiger Trainer\" ist jetzt ein Attribut pro Material-Eintrag statt pro Mannschaft – so können z.B. mehrere Mengen derselben U-Mannschaft mit unterschiedlichen Trainern erfasst werden.",
+          "Der Trainer wird in der Materialliste als eigene Spalte je Eintrag angezeigt und kann dort auch direkt bearbeitet werden."
+        ]
+      }
+    ]
+  },
   {
     version: "1.9.9",
     groups: [
