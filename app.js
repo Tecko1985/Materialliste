@@ -66,13 +66,27 @@ function resolveTeamByName(name) {
   return t;
 }
 
+function compareTeamNames(a, b) {
+  const numA = a.match(/\d+/);
+  const numB = b.match(/\d+/);
+  if (numA && numB) {
+    const diff = parseInt(numA[0], 10) - parseInt(numB[0], 10);
+    if (diff !== 0) return diff;
+  } else if (numA) {
+    return -1;
+  } else if (numB) {
+    return 1;
+  }
+  return a.localeCompare(b, "de");
+}
+
 function teamOptionsHtml(selected) {
   const names = appData.teams.map((t) => t.name);
   const options = [{ value: "", label: "— keine —" }];
   if (selected && !names.includes(selected)) {
     options.push({ value: selected, label: `${selected} (nicht angelegt)` });
   }
-  names.sort((a, b) => a.localeCompare(b, "de")).forEach((n) => options.push({ value: n, label: n }));
+  names.sort(compareTeamNames).forEach((n) => options.push({ value: n, label: n }));
   return options.map((o) => `<option value="${escapeHtml(o.value)}" ${o.value === selected ? "selected" : ""}>${escapeHtml(o.label)}</option>`).join("");
 }
 
@@ -87,7 +101,7 @@ function renderMannschaftCheckboxes() {
   const grid = document.getElementById("mannschaft-checkbox-grid");
   if (!grid) return;
   const prevSelected = getSelectedMannschaft();
-  const teams = appData.teams.slice().sort((a, b) => a.name.localeCompare(b.name, "de"));
+  const teams = appData.teams.slice().sort((a, b) => compareTeamNames(a.name, b.name));
   grid.innerHTML = teams.map((t) => `
     <label><input type="checkbox" data-name="${escapeHtml(t.name)}" ${t.name === prevSelected ? "checked" : ""} /> ${escapeHtml(t.name)}</label>
   `).join("");
@@ -475,7 +489,7 @@ function groupByMannschaft(list) {
   const keys = [...groups.keys()].sort((a, b) => {
     if (!a && b) return 1;
     if (a && !b) return -1;
-    return a.localeCompare(b, "de");
+    return compareTeamNames(a, b);
   });
   return keys.map((key) => ({ mannschaft: key, items: groups.get(key) }));
 }
@@ -632,7 +646,7 @@ function setupTeamForm() {
 function renderTeams() {
   const empty = document.getElementById("teams-empty");
   const container = document.getElementById("teams-list");
-  const teams = appData.teams.slice().sort((a, b) => a.name.localeCompare(b.name, "de"));
+  const teams = appData.teams.slice().sort((a, b) => compareTeamNames(a.name, b.name));
   empty.style.display = teams.length === 0 ? "block" : "none";
   container.innerHTML = teams.map((t) => {
     const count = appData.materials.filter((m) => m.mannschaft === t.name).length;

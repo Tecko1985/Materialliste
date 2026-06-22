@@ -1,6 +1,17 @@
-const APP_VERSION = "1.9.1";
+const APP_VERSION = "1.9.2";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9.2",
+    groups: [
+      {
+        title: "Hinzufügen",
+        items: [
+          "Mannschaften (z.B. U7, U9, U11, ...) werden jetzt nach Altersklasse sortiert statt alphabetisch angezeigt — auch in Materialliste und Mannschaften-Tab."
+        ]
+      }
+    ]
+  },
   {
     version: "1.9.1",
     groups: [
