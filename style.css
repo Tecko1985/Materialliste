@@ -201,7 +201,7 @@ table tr:hover td { background: var(--gray); }
 
 .team-edit-row {
   display: grid;
-  grid-template-columns: 1.6fr 1fr auto;
+  grid-template-columns: 1.3fr 1.3fr 1fr auto;
   gap: 8px;
   align-items: center;
   padding: 8px 10px;

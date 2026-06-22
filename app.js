@@ -32,6 +32,9 @@ function escapeHtml(str) {
 function migrateData(data) {
   if (!Array.isArray(data.materials)) data.materials = [];
   if (!Array.isArray(data.teams)) data.teams = [];
+  data.teams.forEach((t) => {
+    if (t.trainer === undefined) t.trainer = "";
+  });
   data.materials.forEach((m) => {
     if (m.id === undefined) m.id = uuid();
     if (m.name === undefined) m.name = "";
@@ -48,7 +51,7 @@ function migrateData(data) {
   const existingNames = new Set(data.teams.map((t) => t.name.toLowerCase()));
   data.materials.forEach((m) => {
     if (m.mannschaft && !existingNames.has(m.mannschaft.toLowerCase())) {
-      data.teams.push({ id: uuid(), name: m.mannschaft });
+      data.teams.push({ id: uuid(), name: m.mannschaft, trainer: "" });
       existingNames.add(m.mannschaft.toLowerCase());
     }
   });
@@ -60,7 +63,7 @@ function resolveTeamByName(name) {
   if (!trimmed) return null;
   let t = appData.teams.find((x) => x.name.toLowerCase() === trimmed.toLowerCase());
   if (!t) {
-    t = { id: uuid(), name: trimmed };
+    t = { id: uuid(), name: trimmed, trainer: "" };
     appData.teams.push(t);
   }
   return t;
@@ -117,7 +120,28 @@ function renderMannschaftCheckboxes() {
         });
       }
       cb.closest("label").classList.toggle("checked", cb.checked);
+      updateMannschaftTrainerField();
     });
+  });
+  updateMannschaftTrainerField();
+}
+
+function updateMannschaftTrainerField() {
+  const input = document.getElementById("m-mannschaft-trainer");
+  if (!input) return;
+  const team = appData.teams.find((t) => t.name === getSelectedMannschaft());
+  input.value = team ? team.trainer || "" : "";
+}
+
+function setupMannschaftTrainerField() {
+  const input = document.getElementById("m-mannschaft-trainer");
+  if (!input) return;
+  input.addEventListener("change", () => {
+    const team = appData.teams.find((t) => t.name === getSelectedMannschaft());
+    if (!team) return;
+    team.trainer = input.value.trim();
+    persist();
+    renderTeams();
   });
 }
 
@@ -597,15 +621,19 @@ function renderListe() {
   empty.style.display = appData.materials.length === 0 ? "block" : "none";
 
   const groups = groupByMannschaft(list);
-  container.innerHTML = groups.map((g) => `
+  container.innerHTML = groups.map((g) => {
+    const team = appData.teams.find((t) => t.name === g.mannschaft);
+    const trainerSuffix = team && team.trainer ? ` · Trainer: ${escapeHtml(team.trainer)}` : "";
+    return `
     <div class="material-group" data-mannschaft="${escapeHtml(g.mannschaft)}">
-      <div class="material-group-title">${escapeHtml(g.mannschaft || "Ohne Mannschaft")} (${g.items.length})</div>
+      <div class="material-group-title">${escapeHtml(g.mannschaft || "Ohne Mannschaft")} (${g.items.length})${trainerSuffix}</div>
       <div class="material-edit-row material-edit-header">
         <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Zustand</span><span></span>
       </div>
       <div class="player-grid">${buildRenderGroups(g.items).map((rg) => rg.type === "satz" ? satzRowHtml(rg) : materialRowHtml(rg.material)).join("")}</div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   container.querySelectorAll("input, select").forEach((input) => {
     input.addEventListener("change", () => commitMaterialEdit(input));
@@ -648,7 +676,7 @@ function setupTeamForm() {
       alert("Diese Mannschaft existiert bereits.");
       return;
     }
-    appData.teams.push({ id: uuid(), name });
+    appData.teams.push({ id: uuid(), name, trainer: "" });
     persist();
     renderTeams();
     renderMannschaftCheckboxes();
@@ -667,13 +695,14 @@ function renderTeams() {
     return `
       <div class="team-edit-row" data-id="${t.id}">
         <input type="text" data-field="name" value="${escapeHtml(t.name)}" />
+        <input type="text" data-field="trainer" value="${escapeHtml(t.trainer)}" placeholder="Name des Trainers" />
         <span class="team-count">${count} Material-Eintrag/Einträge</span>
         <button class="btn danger small" data-action="delete-team">Löschen</button>
       </div>
     `;
   }).join("");
 
-  container.querySelectorAll('input[data-field="name"]').forEach((input) => {
+  container.querySelectorAll('input[data-field="name"], input[data-field="trainer"]').forEach((input) => {
     input.addEventListener("change", () => commitTeamEdit(input));
   });
   container.querySelectorAll('[data-action="delete-team"]').forEach((btn) => {
@@ -689,6 +718,15 @@ function commitTeamEdit(input) {
   const id = row.dataset.id;
   const team = appData.teams.find((t) => t.id === id);
   if (!team) return;
+  const field = input.dataset.field;
+
+  if (field === "trainer") {
+    team.trainer = input.value.trim();
+    persist();
+    updateMannschaftTrainerField();
+    return;
+  }
+
   const newName = input.value.trim();
   if (!newName) {
     input.value = team.name;
@@ -917,6 +955,7 @@ function setupMaterialForm() {
     document.querySelectorAll("#trikot-number-grid label.checked, #hosen-number-grid label.checked, #mannschaft-checkbox-grid label.checked").forEach((l) => l.classList.remove("checked"));
     updateMaterialTypeVisibility();
     updateHosenNummernVisibility();
+    updateMannschaftTrainerField();
     document.getElementById("m-name").focus();
   });
 }
@@ -1319,6 +1358,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setupDeleteAllButton();
   setupTeamForm();
   setupMaterialForm();
+  setupMannschaftTrainerField();
   setupSmartImport();
   setupBackupButtons();
   setupBackupFolder();

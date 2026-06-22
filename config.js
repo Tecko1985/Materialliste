@@ -1,6 +1,18 @@
-const APP_VERSION = "1.9.7";
+const APP_VERSION = "1.9.8";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9.8",
+    groups: [
+      {
+        title: "Mannschaften",
+        items: [
+          "Neues Attribut \"Zuständiger Trainer\" pro Mannschaft – editierbar im Mannschaften-Tab und direkt neben der Mannschaft-Auswahl beim Hinzufügen.",
+          "Der Trainer-Name wird jetzt zusätzlich in der Materialliste bei jeder Mannschaftsgruppe angezeigt."
+        ]
+      }
+    ]
+  },
   {
     version: "1.9.7",
     groups: [
