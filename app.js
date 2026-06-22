@@ -482,17 +482,18 @@ function groupByMannschaft(list) {
 
 function buildRenderGroups(items) {
   const rendered = new Set();
-  const result = [];
+  const saetze = [];
+  const singles = [];
   items.forEach((m) => {
     if (m.satzId) {
       if (rendered.has(m.satzId)) return;
       rendered.add(m.satzId);
-      result.push({ type: "satz", satzId: m.satzId, label: m.satzLabel, items: items.filter((x) => x.satzId === m.satzId) });
+      saetze.push({ type: "satz", satzId: m.satzId, label: m.satzLabel, items: items.filter((x) => x.satzId === m.satzId) });
     } else {
-      result.push({ type: "single", material: m });
+      singles.push({ type: "single", material: m });
     }
   });
-  return result;
+  return saetze.concat(singles);
 }
 
 function setupDeleteAllButton() {
@@ -540,8 +541,6 @@ function materialRowHtml(m) {
       <input type="text" data-field="kategorie" value="${escapeHtml(m.kategorie)}" />
       <select data-field="mannschaft">${teamOptionsHtml(m.mannschaft)}</select>
       <input type="number" data-field="menge" value="${escapeHtml(m.menge)}" />
-      <input type="text" data-field="einheit" value="${escapeHtml(m.einheit)}" />
-      <input type="text" data-field="standort" value="${escapeHtml(m.standort)}" />
       <input type="text" data-field="zustand" value="${escapeHtml(m.zustand)}" />
       <div class="row-actions">
         <button class="btn danger small" data-action="delete">Löschen</button>
@@ -555,7 +554,7 @@ function satzRowHtml(satz) {
     <details class="satz-group">
       <summary>🎽 ${escapeHtml(satz.label || "Trikotsatz")} <span class="muted">(Satz · ${satz.items.length} Teile)</span></summary>
       <div class="material-edit-row material-edit-header">
-        <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Einheit</span><span>Standort</span><span>Zustand</span><span></span>
+        <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Zustand</span><span></span>
       </div>
       <div class="player-grid">${satz.items.map(materialRowHtml).join("")}</div>
     </details>
@@ -574,7 +573,7 @@ function renderListe() {
     <div class="material-group">
       <div class="material-group-title">${escapeHtml(g.mannschaft || "Ohne Mannschaft")} (${g.items.length})</div>
       <div class="material-edit-row material-edit-header">
-        <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Einheit</span><span>Standort</span><span>Zustand</span><span></span>
+        <span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Zustand</span><span></span>
       </div>
       <div class="player-grid">${buildRenderGroups(g.items).map((rg) => rg.type === "satz" ? satzRowHtml(rg) : materialRowHtml(rg.material)).join("")}</div>
     </div>

@@ -1,6 +1,18 @@
-const APP_VERSION = "1.8";
+const APP_VERSION = "1.9";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9",
+    groups: [
+      {
+        title: "Materialliste",
+        items: [
+          "Trikotsätze werden in jeder Mannschaftsgruppe jetzt immer ganz oben angezeigt.",
+          "Spalten \"Einheit\" und \"Standort\" aus der Materialliste-Ansicht entfernt (Daten bleiben erhalten, weiterhin über \"Hinzufügen\" editierbar)."
+        ]
+      }
+    ]
+  },
   {
     version: "1.8",
     groups: [
