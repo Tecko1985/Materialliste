@@ -1,6 +1,17 @@
-const APP_VERSION = "1.9.5";
+const APP_VERSION = "1.9.6";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.9.6",
+    groups: [
+      {
+        title: "Nextcloud-Verbindung",
+        items: [
+          "WebDAV-Adresse, Benutzername und CORS-Proxy-URL sind im Verbindungsformular bereits vorbelegt – nur noch das App-Passwort muss eingegeben werden."
+        ]
+      }
+    ]
+  },
   {
     version: "1.9.5",
     groups: [
