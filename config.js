@@ -1,6 +1,17 @@
-const APP_VERSION = "1.7";
+const APP_VERSION = "1.8";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.8",
+    groups: [
+      {
+        title: "Hinzufügen",
+        items: [
+          "Neue Checkbox \"Hosen haben Nummern\" beim Trikotsatz: zeigt ein 1–40 Nummern-Grid für Hosen statt nur eines Mengenfelds."
+        ]
+      }
+    ]
+  },
   {
     version: "1.7",
     groups: [
