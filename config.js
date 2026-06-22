@@ -1,6 +1,19 @@
-const APP_VERSION = "1.0";
+const APP_VERSION = "1.1";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.1",
+    groups: [
+      {
+        title: "Mannschaften",
+        items: [
+          "Neuer Tab \"Mannschaften\": Mannschaften anlegen, umbenennen und löschen.",
+          "Mannschaft-Feld in Materialliste und Hinzufügen-Formular jetzt als Dropdown aus der Mannschaftsliste.",
+          "Materialliste gruppiert nach Mannschaft."
+        ]
+      }
+    ]
+  },
   {
     version: "1.0",
     groups: [
