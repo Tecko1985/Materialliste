@@ -495,6 +495,21 @@ function buildRenderGroups(items) {
   return result;
 }
 
+function setupDeleteAllButton() {
+  document.getElementById("btn-delete-all-materials").addEventListener("click", () => {
+    const count = appData.materials.length;
+    if (count === 0) {
+      alert("Die Materialliste ist bereits leer.");
+      return;
+    }
+    if (!confirm(`Wirklich ALLE ${count} Material-Einträge unwiderruflich löschen? Mannschaften bleiben erhalten.`)) return;
+    if (!confirm("Letzte Sicherheitsabfrage: Materialliste jetzt endgültig leeren?")) return;
+    appData.materials = [];
+    persist();
+    renderListe();
+  });
+}
+
 function setupListeFilters() {
   document.getElementById("liste-search-input").addEventListener("input", (e) => {
     listeSearchQuery = e.target.value;
@@ -1238,6 +1253,7 @@ async function tryAutoBackupOnStart() {
 window.addEventListener("DOMContentLoaded", () => {
   setupNav();
   setupListeFilters();
+  setupDeleteAllButton();
   setupTeamForm();
   setupMaterialForm();
   setupSmartImport();

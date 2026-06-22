@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#1a56a0" />
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="style.css?v=1.6" />
+<link rel="stylesheet" href="style.css?v=1.7" />
 </head>
 <body>
 
@@ -90,8 +90,11 @@
     <!-- Materialliste -->
     <section class="tab-section active" id="tab-liste">
       <div class="card">
-        <h2>Materialübersicht</h2>
-        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <h2 style="margin-bottom:0;">Materialübersicht</h2>
+          <button class="btn danger small" id="btn-delete-all-materials" type="button">Materialliste komplett löschen</button>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; margin-top:14px;">
           <div class="form-field" style="max-width:220px;">
             <label>Suche</label>
             <input type="text" id="liste-search-input" placeholder="Name…" />
@@ -308,8 +311,8 @@
   </main>
 </div>
 
-<script src="config.js?v=1.6"></script>
-<script src="db.js?v=1.6"></script>
-<script src="app.js?v=1.6"></script>
+<script src="config.js?v=1.7"></script>
+<script src="db.js?v=1.7"></script>
+<script src="app.js?v=1.7"></script>
 </body>
 </html>

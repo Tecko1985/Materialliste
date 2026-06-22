@@ -1,6 +1,17 @@
-const APP_VERSION = "1.6";
+const APP_VERSION = "1.7";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.7",
+    groups: [
+      {
+        title: "Materialliste",
+        items: [
+          "Neuer Knopf \"Materialliste komplett löschen\" (mit doppelter Sicherheitsabfrage). Mannschaften bleiben dabei erhalten."
+        ]
+      }
+    ]
+  },
   {
     version: "1.6",
     groups: [
