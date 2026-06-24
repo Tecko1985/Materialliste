@@ -451,14 +451,18 @@ function uniqueValues(field) {
 function populateListeFilters() {
   const kategorieSelect = document.getElementById("liste-kategorie-filter");
   const mannschaftSelect = document.getElementById("liste-mannschaft-filter");
-  const prevKategorie = kategorieSelect.value;
-  const prevMannschaft = mannschaftSelect.value;
+  const kategorien = uniqueValues("kategorie");
+  const mannschaften = uniqueValues("mannschaft");
+  // Aktiven Filter zurücksetzen, wenn sein Wert nicht mehr existiert – sonst zeigt
+  // das Dropdown "Alle", filtert aber weiter auf den verschwundenen Wert (leere Liste).
+  if (listeKategorieFilter && !kategorien.includes(listeKategorieFilter)) listeKategorieFilter = "";
+  if (listeMannschaftFilter && !mannschaften.includes(listeMannschaftFilter)) listeMannschaftFilter = "";
   kategorieSelect.innerHTML = '<option value="">Alle Kategorien</option>' +
-    uniqueValues("kategorie").map((k) => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join("");
+    kategorien.map((k) => `<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join("");
   mannschaftSelect.innerHTML = '<option value="">Alle Mannschaften</option>' +
-    uniqueValues("mannschaft").map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
-  kategorieSelect.value = prevKategorie;
-  mannschaftSelect.value = prevMannschaft;
+    mannschaften.map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+  kategorieSelect.value = listeKategorieFilter;
+  mannschaftSelect.value = listeMannschaftFilter;
 }
 
 function filteredSortedMaterials() {
@@ -582,7 +586,15 @@ function renderListe() {
   const list = filteredSortedMaterials();
   const container = document.getElementById("liste-groups");
   const empty = document.getElementById("liste-empty");
-  empty.style.display = appData.materials.length === 0 ? "block" : "none";
+  if (appData.materials.length === 0) {
+    empty.textContent = 'Noch kein Material angelegt. Wechsle zu "Hinzufügen".';
+    empty.style.display = "block";
+  } else if (list.length === 0) {
+    empty.textContent = "Keine Einträge passen zu den aktuellen Filtern.";
+    empty.style.display = "block";
+  } else {
+    empty.style.display = "none";
+  }
 
   const groups = groupByMannschaft(list);
   container.innerHTML = groups.map((g) => `
@@ -782,8 +794,17 @@ function updateMaterialTypeVisibility() {
 }
 
 function setupMaterialTypeToggle() {
-  ["chk-trikotsatz", "chk-baelle", "chk-leibchen", "chk-sonstiges"].forEach((id) => {
-    document.getElementById(id).addEventListener("change", updateMaterialTypeVisibility);
+  const typeIds = ["chk-trikotsatz", "chk-baelle", "chk-leibchen", "chk-sonstiges"];
+  typeIds.forEach((id) => {
+    document.getElementById(id).addEventListener("change", (e) => {
+      // Nur eine Art gleichzeitig – das Speichern verarbeitet ohnehin nur einen Typ.
+      if (e.target.checked) {
+        typeIds.forEach((other) => {
+          if (other !== id) document.getElementById(other).checked = false;
+        });
+      }
+      updateMaterialTypeVisibility();
+    });
   });
   updateMaterialTypeVisibility();
   document.getElementById("chk-hosen-nummern").addEventListener("change", updateHosenNummernVisibility);
