@@ -1,5 +1,5 @@
 // Cloudflare Worker: CORS-Proxy für den Zugriff auf Nextcloud-WebDAV von
-// https://tecko1985.github.io/materialliste-test/ aus (z.B. am Handy).
+// https://tecko1985.github.io/Materialliste/ aus (z.B. am Handy).
 // Nicht Teil der ausgelieferten App – wird separat bei Cloudflare deployed.
 // Deployment: dash.cloudflare.com -> Workers & Pages -> Create -> "Hello World" ->
 // diesen Code im Editor einfügen -> Deploy. Die resultierende *.workers.dev-URL
