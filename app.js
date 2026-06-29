@@ -831,28 +831,130 @@ function deleteReserveItem(id) {
 }
 
 function setupReserveForm() {
+  buildReserveTrikotNumberGrid();
+  setupMaterialTypeToggle(RESERVE_TYPE_IDS);
+
   document.getElementById("reserve-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = document.getElementById("r-name").value.trim();
-    if (!name) {
-      alert("Bitte einen Namen eingeben.");
+    const trikot = document.getElementById("r-chk-trikotsatz").checked;
+    const baelle = document.getElementById("r-chk-baelle").checked;
+    const leibchen = document.getElementById("r-chk-leibchen").checked;
+    const sonstiges = document.getElementById("r-chk-sonstiges").checked;
+    let addedAny = false;
+
+    if (trikot) {
+      const bezeichnung = document.getElementById("r-mt-bezeichnung").value.trim();
+      const zustand = document.getElementById("r-mt-zustand").value.trim();
+      const numbers = Array.from(document.querySelectorAll('#r-trikot-number-grid input[type="checkbox"]:checked')).map((c) => c.dataset.num);
+      const hosenHatNummern = document.getElementById("r-chk-hosen-nummern").checked;
+      const hosenNumbers = Array.from(document.querySelectorAll('#r-hosen-number-grid input[type="checkbox"]:checked')).map((c) => c.dataset.num);
+      const hosen = document.getElementById("r-mt-hosen").value;
+      const stutzen = document.getElementById("r-mt-stutzen").value;
+      const satzLabel = ["Trikotsatz", bezeichnung].filter(Boolean).join(" ");
+      const satzEntries = [];
+
+      if (numbers.length > 0) {
+        satzEntries.push({
+          id: uuid(),
+          name: ["Trikot", bezeichnung].filter(Boolean).join(" "),
+          kategorie: "Trikot",
+          menge: String(numbers.length),
+          einheit: "Stk",
+          standort: "",
+          trainer: "",
+          zustand: [zustand, "Nr. " + numbers.join(", ")].filter(Boolean).join(" / ")
+        });
+      }
+      if (hosenHatNummern) {
+        if (hosenNumbers.length > 0) {
+          satzEntries.push({
+            id: uuid(),
+            name: ["Hose", bezeichnung].filter(Boolean).join(" "),
+            kategorie: "Hose",
+            menge: String(hosenNumbers.length),
+            einheit: "Stk",
+            standort: "",
+            trainer: "",
+            zustand: [zustand, "Nr. " + hosenNumbers.join(", ")].filter(Boolean).join(" / ")
+          });
+        }
+      } else if (hosen && Number(hosen) > 0) {
+        satzEntries.push({
+          id: uuid(), name: ["Hose", bezeichnung].filter(Boolean).join(" "), kategorie: "Hose",
+          menge: hosen, einheit: "Stk", standort: "", trainer: "", zustand
+        });
+      }
+      if (stutzen && Number(stutzen) > 0) {
+        satzEntries.push({
+          id: uuid(), name: ["Stutzen", bezeichnung].filter(Boolean).join(" "), kategorie: "Stutzen",
+          menge: stutzen, einheit: "Stk", standort: "", trainer: "", zustand
+        });
+      }
+      if (satzEntries.length === 0) {
+        alert("Bitte mindestens eine Trikot-Nummer auswählen oder eine Hosen-/Stutzenanzahl eintragen.");
+        return;
+      }
+      if (satzEntries.length > 1) {
+        const satzId = uuid();
+        satzEntries.forEach((entry) => { entry.satzId = satzId; entry.satzLabel = satzLabel; });
+      }
+      appData.reserve.push(...satzEntries);
+      addedAny = true;
+    } else if (baelle) {
+      appData.reserve.push({
+        id: uuid(),
+        name: "Bälle",
+        kategorie: "Sportgerät",
+        menge: document.getElementById("r-mb-menge").value,
+        einheit: "Stk",
+        standort: "",
+        trainer: "",
+        zustand: document.getElementById("r-mb-zustand").value.trim()
+      });
+      addedAny = true;
+    } else if (leibchen) {
+      const farbe = document.getElementById("r-ml-farbe").value.trim();
+      appData.reserve.push({
+        id: uuid(),
+        name: ["Leibchen", farbe].filter(Boolean).join(" "),
+        kategorie: "Leibchen",
+        menge: document.getElementById("r-ml-menge").value,
+        einheit: "Stk",
+        standort: "",
+        trainer: "",
+        zustand: document.getElementById("r-ml-zustand").value.trim()
+      });
+      addedAny = true;
+    } else if (sonstiges) {
+      const name = document.getElementById("r-name").value.trim();
+      if (!name) {
+        alert("Bitte einen Namen eingeben.");
+        return;
+      }
+      appData.reserve.push({
+        id: uuid(),
+        name,
+        kategorie: document.getElementById("r-kategorie").value.trim(),
+        menge: document.getElementById("r-menge").value,
+        einheit: "",
+        standort: "",
+        trainer: "",
+        zustand: document.getElementById("r-zustand").value.trim()
+      });
+      addedAny = true;
+    } else {
+      alert("Bitte eine Art auswählen (Trikotsatz, Bälle, Leibchen oder Sonstiges).");
       return;
     }
-    appData.reserve.push({
-      id: uuid(),
-      name,
-      kategorie: document.getElementById("r-kategorie").value.trim(),
-      menge: document.getElementById("r-menge").value,
-      einheit: "",
-      standort: "",
-      trainer: "",
-      zustand: document.getElementById("r-zustand").value.trim(),
-      satzId: "",
-      satzLabel: ""
-    });
+
+    if (!addedAny) return;
+
     persist();
     renderReserve();
     e.target.reset();
+    document.querySelectorAll("#r-trikot-number-grid label.checked, #r-hosen-number-grid label.checked").forEach((l) => l.classList.remove("checked"));
+    updateMaterialTypeVisibility(RESERVE_TYPE_IDS);
+    updateHosenNummernVisibility(RESERVE_TYPE_IDS);
     document.getElementById("r-name").focus();
   });
 }
@@ -1015,36 +1117,55 @@ function buildTrikotNumberGrid() {
   buildNumberGrid("hosen-number-grid");
 }
 
-function updateHosenNummernVisibility() {
-  const hatNummern = document.getElementById("chk-hosen-nummern").checked;
-  document.getElementById("mt-hosen-field").style.display = hatNummern ? "none" : "";
-  document.getElementById("hosen-nummern-wrap").style.display = hatNummern ? "block" : "none";
+function buildReserveTrikotNumberGrid() {
+  buildNumberGrid("r-trikot-number-grid");
+  buildNumberGrid("r-hosen-number-grid");
 }
 
-function updateMaterialTypeVisibility() {
-  const chkTrikot = document.getElementById("chk-trikotsatz");
-  const chkBaelle = document.getElementById("chk-baelle");
-  const chkLeibchen = document.getElementById("chk-leibchen");
-  const chkSonstiges = document.getElementById("chk-sonstiges");
+const MATERIAL_TYPE_IDS = {
+  chkTrikotsatz: "chk-trikotsatz", chkBaelle: "chk-baelle", chkLeibchen: "chk-leibchen", chkSonstiges: "chk-sonstiges",
+  baelleLabel: "mtype-baelle-label", leibchenLabel: "mtype-leibchen-label", sonstigesLabel: "mtype-sonstiges-label",
+  formTrikotsatz: "mform-trikotsatz", formBaelle: "mform-baelle", formLeibchen: "mform-leibchen", formGeneric: "mform-generic",
+  chkHosenNummern: "chk-hosen-nummern", hosenField: "mt-hosen-field", hosenNummernWrap: "hosen-nummern-wrap"
+};
+
+const RESERVE_TYPE_IDS = {
+  chkTrikotsatz: "r-chk-trikotsatz", chkBaelle: "r-chk-baelle", chkLeibchen: "r-chk-leibchen", chkSonstiges: "r-chk-sonstiges",
+  baelleLabel: "r-mtype-baelle-label", leibchenLabel: "r-mtype-leibchen-label", sonstigesLabel: "r-mtype-sonstiges-label",
+  formTrikotsatz: "r-mform-trikotsatz", formBaelle: "r-mform-baelle", formLeibchen: "r-mform-leibchen", formGeneric: "r-mform-generic",
+  chkHosenNummern: "r-chk-hosen-nummern", hosenField: "r-mt-hosen-field", hosenNummernWrap: "r-hosen-nummern-wrap"
+};
+
+function updateHosenNummernVisibility(ids) {
+  const hatNummern = document.getElementById(ids.chkHosenNummern).checked;
+  document.getElementById(ids.hosenField).style.display = hatNummern ? "none" : "";
+  document.getElementById(ids.hosenNummernWrap).style.display = hatNummern ? "block" : "none";
+}
+
+function updateMaterialTypeVisibility(ids) {
+  const chkTrikot = document.getElementById(ids.chkTrikotsatz);
+  const chkBaelle = document.getElementById(ids.chkBaelle);
+  const chkLeibchen = document.getElementById(ids.chkLeibchen);
+  const chkSonstiges = document.getElementById(ids.chkSonstiges);
   const trikot = chkTrikot.checked;
 
-  document.getElementById("mtype-baelle-label").style.display = trikot ? "none" : "";
-  document.getElementById("mtype-leibchen-label").style.display = trikot ? "none" : "";
-  document.getElementById("mtype-sonstiges-label").style.display = trikot ? "none" : "";
+  document.getElementById(ids.baelleLabel).style.display = trikot ? "none" : "";
+  document.getElementById(ids.leibchenLabel).style.display = trikot ? "none" : "";
+  document.getElementById(ids.sonstigesLabel).style.display = trikot ? "none" : "";
   if (trikot) {
     chkBaelle.checked = false;
     chkLeibchen.checked = false;
     chkSonstiges.checked = false;
   }
 
-  document.getElementById("mform-trikotsatz").style.display = trikot ? "block" : "none";
-  document.getElementById("mform-baelle").style.display = !trikot && chkBaelle.checked ? "grid" : "none";
-  document.getElementById("mform-leibchen").style.display = !trikot && chkLeibchen.checked ? "grid" : "none";
-  document.getElementById("mform-generic").style.display = !trikot && chkSonstiges.checked ? "grid" : "none";
+  document.getElementById(ids.formTrikotsatz).style.display = trikot ? "block" : "none";
+  document.getElementById(ids.formBaelle).style.display = !trikot && chkBaelle.checked ? "grid" : "none";
+  document.getElementById(ids.formLeibchen).style.display = !trikot && chkLeibchen.checked ? "grid" : "none";
+  document.getElementById(ids.formGeneric).style.display = !trikot && chkSonstiges.checked ? "grid" : "none";
 }
 
-function setupMaterialTypeToggle() {
-  const typeIds = ["chk-trikotsatz", "chk-baelle", "chk-leibchen", "chk-sonstiges"];
+function setupMaterialTypeToggle(ids) {
+  const typeIds = [ids.chkTrikotsatz, ids.chkBaelle, ids.chkLeibchen, ids.chkSonstiges];
   typeIds.forEach((id) => {
     document.getElementById(id).addEventListener("change", (e) => {
       // Nur eine Art gleichzeitig – das Speichern verarbeitet ohnehin nur einen Typ.
@@ -1053,17 +1174,17 @@ function setupMaterialTypeToggle() {
           if (other !== id) document.getElementById(other).checked = false;
         });
       }
-      updateMaterialTypeVisibility();
+      updateMaterialTypeVisibility(ids);
     });
   });
-  updateMaterialTypeVisibility();
-  document.getElementById("chk-hosen-nummern").addEventListener("change", updateHosenNummernVisibility);
-  updateHosenNummernVisibility();
+  updateMaterialTypeVisibility(ids);
+  document.getElementById(ids.chkHosenNummern).addEventListener("change", () => updateHosenNummernVisibility(ids));
+  updateHosenNummernVisibility(ids);
 }
 
 function setupMaterialForm() {
   buildTrikotNumberGrid();
-  setupMaterialTypeToggle();
+  setupMaterialTypeToggle(MATERIAL_TYPE_IDS);
 
   document.getElementById("material-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -1193,8 +1314,8 @@ function setupMaterialForm() {
     renderListe();
     e.target.reset();
     document.querySelectorAll("#trikot-number-grid label.checked, #hosen-number-grid label.checked, #mannschaft-checkbox-grid label.checked").forEach((l) => l.classList.remove("checked"));
-    updateMaterialTypeVisibility();
-    updateHosenNummernVisibility();
+    updateMaterialTypeVisibility(MATERIAL_TYPE_IDS);
+    updateHosenNummernVisibility(MATERIAL_TYPE_IDS);
     document.getElementById("m-name").focus();
   });
 }

@@ -277,13 +277,64 @@
         <details id="reserve-add-details" style="margin-top:16px;">
           <summary><h3 style="display:inline;">Reserve-Material hinzufügen</h3></summary>
           <form id="reserve-form" style="margin-top:12px;">
-            <div class="form-grid">
-              <div class="form-field"><label>Name *</label><input type="text" id="r-name" required /></div>
+
+            <div class="form-field" style="margin-bottom:16px;">
+              <label>Art</label>
+              <div class="btn-row" style="justify-content:flex-start; gap:20px;">
+                <label class="checkbox-label"><input type="checkbox" id="r-chk-trikotsatz" /> Trikotsatz</label>
+                <label class="checkbox-label" id="r-mtype-baelle-label"><input type="checkbox" id="r-chk-baelle" /> Bälle</label>
+                <label class="checkbox-label" id="r-mtype-leibchen-label"><input type="checkbox" id="r-chk-leibchen" /> Leibchen</label>
+                <label class="checkbox-label" id="r-mtype-sonstiges-label"><input type="checkbox" id="r-chk-sonstiges" /> Sonstiges</label>
+              </div>
+            </div>
+
+            <!-- Generisch (Standardfall) -->
+            <div class="form-grid" id="r-mform-generic">
+              <div class="form-field"><label>Name *</label><input type="text" id="r-name" /></div>
               <div class="form-field"><label>Kategorie</label><input type="text" id="r-kategorie" placeholder="z.B. Bekleidung, Sportgerät" /></div>
               <div class="form-field"><label>Menge</label><input type="number" id="r-menge" min="0" step="1" /></div>
               <div class="form-field"><label>Zustand</label><input type="text" id="r-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
             </div>
-            <button class="btn" type="submit">Reserve-Material hinzufügen</button>
+
+            <!-- Bälle -->
+            <div class="form-grid" id="r-mform-baelle" style="display:none;">
+              <div class="form-field"><label>Menge</label><input type="number" id="r-mb-menge" min="0" step="1" /></div>
+              <div class="form-field"><label>Zustand</label><input type="text" id="r-mb-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+            </div>
+
+            <!-- Leibchen -->
+            <div class="form-grid" id="r-mform-leibchen" style="display:none;">
+              <div class="form-field"><label>Farbe</label><input type="text" id="r-ml-farbe" placeholder="z.B. Grau, Rot, Gelb" /></div>
+              <div class="form-field"><label>Menge</label><input type="number" id="r-ml-menge" min="0" step="1" /></div>
+              <div class="form-field"><label>Zustand</label><input type="text" id="r-ml-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+            </div>
+
+            <!-- Trikotsatz -->
+            <div id="r-mform-trikotsatz" style="display:none;">
+              <div class="form-grid">
+                <div class="form-field"><label>Bezeichnung</label><input type="text" id="r-mt-bezeichnung" placeholder="z.B. Blau KD Sports" /></div>
+                <div class="form-field"><label>Zustand</label><input type="text" id="r-mt-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+              </div>
+              <div class="form-field" style="margin-bottom:14px;">
+                <label>Trikot-Nummern</label>
+                <div class="number-grid" id="r-trikot-number-grid"></div>
+              </div>
+              <div class="form-field" style="margin-bottom:10px;">
+                <label class="checkbox-label"><input type="checkbox" id="r-chk-hosen-nummern" /> Hosen haben Nummern</label>
+              </div>
+              <div class="form-grid" id="r-mt-hosen-field">
+                <div class="form-field"><label>Hosen (Menge)</label><input type="number" id="r-mt-hosen" min="0" step="1" /></div>
+              </div>
+              <div class="form-field" id="r-hosen-nummern-wrap" style="display:none; margin-bottom:14px;">
+                <label>Hosen-Nummern</label>
+                <div class="number-grid" id="r-hosen-number-grid"></div>
+              </div>
+              <div class="form-grid">
+                <div class="form-field"><label>Stutzen (Menge)</label><input type="number" id="r-mt-stutzen" min="0" step="1" /></div>
+              </div>
+            </div>
+
+            <button class="btn" type="submit" style="margin-top:6px;">Reserve-Material hinzufügen</button>
           </form>
         </details>
       </div>
