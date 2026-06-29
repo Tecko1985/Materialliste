@@ -1032,6 +1032,13 @@ function populateUmbuchungSelects() {
   logFilter.value = teams.some((t) => t.name === prevLogFilter) ? prevLogFilter : "";
 }
 
+function deleteUmbuchung(id) {
+  if (!confirm("Diesen Umbuchungs-Eintrag wirklich aus dem Protokoll löschen? Der Materialbestand wird dadurch nicht zurückgebucht.")) return;
+  appData.umbuchungen = appData.umbuchungen.filter((u) => u.id !== id);
+  persist();
+  renderUmbuchungsLog();
+}
+
 function renderUmbuchungsLog() {
   const empty = document.getElementById("umbuchung-log-empty");
   const container = document.getElementById("umbuchung-log-list");
@@ -1041,19 +1048,27 @@ function renderUmbuchungsLog() {
   empty.style.display = list.length === 0 ? "block" : "none";
   container.innerHTML = list.length === 0 ? "" : `
     <div class="umbuchung-log-row umbuchung-log-header">
-      <span>Datum</span><span>Material</span><span>Menge</span><span>Richtung</span><span>Mannschaft</span><span>Kommentar</span>
+      <span>Datum</span><span>Material</span><span>Menge</span><span>Richtung</span><span>Mannschaft</span><span>Kommentar</span><span></span>
     </div>
     ${list.map((u) => `
-      <div class="umbuchung-log-row">
+      <div class="umbuchung-log-row" data-id="${u.id}">
         <span>${escapeHtml(u.datum)}</span>
         <span>${escapeHtml(u.name)}${u.kategorie ? " (" + escapeHtml(u.kategorie) + ")" : ""}</span>
         <span>${escapeHtml(String(u.menge))}</span>
         <span class="badge-richtung">${u.richtung === "reserve->team" ? "Reserve → Mannschaft" : "Mannschaft → Reserve"}</span>
         <span>${escapeHtml(u.ziel)}</span>
         <span>${escapeHtml(u.kommentar)}</span>
+        <div class="row-actions">
+          <button class="btn danger small" data-action="delete">Löschen</button>
+        </div>
       </div>
     `).join("")}
   `;
+  container.querySelectorAll('[data-action="delete"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      deleteUmbuchung(btn.closest(".umbuchung-log-row").dataset.id);
+    });
+  });
 }
 
 function setupUmbuchungForm() {
