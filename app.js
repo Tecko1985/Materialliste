@@ -672,6 +672,7 @@ function commitMaterialEdit(input) {
   material[field] = field === "menge" ? input.value : input.value.trim();
   persist();
   renderListe();
+  populateUmbuchungMaterialSelect();
 }
 
 function deleteMaterial(id) {
@@ -679,6 +680,7 @@ function deleteMaterial(id) {
   appData.materials = appData.materials.filter((m) => m.id !== id);
   persist();
   renderListe();
+  populateUmbuchungMaterialSelect();
 }
 
 // ---------- Mannschaften ----------
@@ -821,6 +823,7 @@ function commitReserveEdit(input) {
   item[field] = field === "menge" ? input.value : input.value.trim();
   persist();
   renderReserve();
+  populateUmbuchungMaterialSelect();
 }
 
 function deleteReserveItem(id) {
@@ -828,6 +831,7 @@ function deleteReserveItem(id) {
   appData.reserve = appData.reserve.filter((m) => m.id !== id);
   persist();
   renderReserve();
+  populateUmbuchungMaterialSelect();
 }
 
 function setupReserveForm() {
@@ -951,6 +955,7 @@ function setupReserveForm() {
 
     persist();
     renderReserve();
+    populateUmbuchungMaterialSelect();
     e.target.reset();
     document.querySelectorAll("#r-trikot-number-grid label.checked, #r-hosen-number-grid label.checked").forEach((l) => l.classList.remove("checked"));
     updateMaterialTypeVisibility(RESERVE_TYPE_IDS);
