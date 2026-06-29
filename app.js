@@ -1071,9 +1071,25 @@ function renderUmbuchungsLog() {
   });
 }
 
+function deleteUmbuchungMaterial() {
+  const richtung = document.getElementById("ub-richtung").value;
+  const materialId = document.getElementById("ub-material").value;
+  if (!materialId) {
+    alert("Bitte ein Material auswählen.");
+    return;
+  }
+  if (richtung === "reserve->team") {
+    deleteReserveItem(materialId);
+  } else {
+    deleteMaterial(materialId);
+  }
+  populateUmbuchungSelects();
+}
+
 function setupUmbuchungForm() {
   document.getElementById("ub-richtung").addEventListener("change", populateUmbuchungMaterialSelect);
   document.getElementById("ub-mannschaft").addEventListener("change", populateUmbuchungMaterialSelect);
+  document.getElementById("btn-ub-delete-material").addEventListener("click", deleteUmbuchungMaterial);
 
   document.getElementById("umbuchung-form").addEventListener("submit", (e) => {
     e.preventDefault();
