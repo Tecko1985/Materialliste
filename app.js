@@ -26,7 +26,10 @@ function uuid() {
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  // Lokales Datum statt UTC – sonst zeigt z.B. eine Umbuchung/Inventur kurz nach
+  // Mitternacht in Deutschland (UTC+1/+2) noch das Datum des Vortags.
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function escapeHtml(str) {
@@ -1820,7 +1823,18 @@ function populateVergleichDatumSelects() {
   const datumASelect = document.getElementById("vergleich-datum-a");
   const datumBSelect = document.getElementById("vergleich-datum-b");
   const snapshots = appData.inventuren.filter((i) => i.ziel === ziel).slice().sort((a, b) => a.datum.localeCompare(b.datum));
-  const optsHtml = snapshots.map((s) => `<option value="${s.id}">${escapeHtml(s.datum)}</option>`).join("");
+  // Mehrere Inventuren am selben Tag wären sonst im Dropdown nicht unterscheidbar – mit Zähler ergänzen.
+  const dateTotals = {};
+  snapshots.forEach((s) => { dateTotals[s.datum] = (dateTotals[s.datum] || 0) + 1; });
+  const dateSeen = {};
+  const optsHtml = snapshots.map((s) => {
+    let label = escapeHtml(s.datum);
+    if (dateTotals[s.datum] > 1) {
+      dateSeen[s.datum] = (dateSeen[s.datum] || 0) + 1;
+      label += ` (${dateSeen[s.datum]})`;
+    }
+    return `<option value="${s.id}">${label}</option>`;
+  }).join("");
   datumASelect.innerHTML = optsHtml;
   datumBSelect.innerHTML = optsHtml;
   if (snapshots.length >= 2) {

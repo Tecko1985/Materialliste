@@ -31,5 +31,9 @@ Statisches HTML/CSS/JavaScript ohne Build-Schritt, IndexedDB für lokale Einstel
 ## Lokal starten
 
 ```
+# mit Python
 python -m http.server 8766 --directory Materialliste
+
+# oder mit Node (ohne Installation)
+npx serve Materialliste
 ```
