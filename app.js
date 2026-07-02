@@ -558,7 +558,7 @@ function materialRowHtml(m, opts = {}) {
   const showMannschaft = opts.showMannschaft !== false;
   const extraClass = [showTrainer ? "" : "no-trainer", showMannschaft ? "" : "no-mannschaft"].filter(Boolean).join(" ");
   return `
-    <div class="material-edit-row${extraClass ? " " + extraClass : ""}" data-id="${m.id}">
+    <div class="material-edit-row${extraClass ? " " + extraClass : ""}" data-id="${escapeHtml(m.id)}">
       <input type="text" data-field="name" value="${escapeHtml(m.name)}" />
       <input type="text" data-field="kategorie" value="${escapeHtml(m.kategorie)}" />
       ${showMannschaft ? `<select data-field="mannschaft">${teamOptionsHtml(m.mannschaft)}</select>` : ""}
@@ -688,7 +688,7 @@ function renderTeams() {
   container.innerHTML = teams.map((t) => {
     const count = appData.materials.filter((m) => m.mannschaft === t.name).length;
     return `
-      <div class="team-edit-row" data-id="${t.id}">
+      <div class="team-edit-row" data-id="${escapeHtml(t.id)}">
         <input type="text" data-field="name" value="${escapeHtml(t.name)}" />
         <span class="team-count">${count} Material-Eintrag/Einträge</span>
         <button class="btn danger small" data-action="delete-team">Löschen</button>
@@ -996,7 +996,7 @@ function populateUmbuchungMaterialSelect() {
     .sort((a, b) => (a.name || "").localeCompare(b.name || "", "de"));
   materialSelect.innerHTML = list.length === 0
     ? '<option value="">— kein Material verfügbar —</option>'
-    : list.map((m) => `<option value="${m.id}">${escapeHtml(m.name)}${m.kategorie ? " (" + escapeHtml(m.kategorie) + ")" : ""} – ${escapeHtml(m.menge)} verfügbar</option>`).join("");
+    : list.map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}${m.kategorie ? " (" + escapeHtml(m.kategorie) + ")" : ""} – ${escapeHtml(m.menge)} verfügbar</option>`).join("");
 }
 
 function populateUmbuchungSelects() {
@@ -1034,7 +1034,7 @@ function renderUmbuchungsLog() {
       <span>Datum</span><span>Material</span><span>Menge</span><span>Richtung</span><span>Mannschaft</span><span>Kommentar</span><span></span>
     </div>
     ${list.map((u) => `
-      <div class="umbuchung-log-row" data-id="${u.id}">
+      <div class="umbuchung-log-row" data-id="${escapeHtml(u.id)}">
         <span>${escapeHtml(u.datum)}</span>
         <span>${escapeHtml(u.name)}${u.kategorie ? " (" + escapeHtml(u.kategorie) + ")" : ""}</span>
         <span>${escapeHtml(String(u.menge))}</span>
@@ -1820,7 +1820,7 @@ function populateVergleichDatumSelects() {
       dateSeen[s.datum] = (dateSeen[s.datum] || 0) + 1;
       label += ` (${dateSeen[s.datum]})`;
     }
-    return `<option value="${s.id}">${label}</option>`;
+    return `<option value="${escapeHtml(s.id)}">${label}</option>`;
   }).join("");
   datumASelect.innerHTML = optsHtml;
   datumBSelect.innerHTML = optsHtml;
