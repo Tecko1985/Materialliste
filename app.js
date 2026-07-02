@@ -70,6 +70,7 @@ function migrateData(data) {
   data.umbuchungen.forEach((u) => {
     if (u.id === undefined) u.id = uuid();
     if (u.datum === undefined) u.datum = todayStr();
+    if (u.ts === undefined) u.ts = ""; // Alt-Einträge ohne Uhrzeit sortieren innerhalb des Tages nach hinten
     if (u.name === undefined) u.name = "";
     if (u.kategorie === undefined) u.kategorie = "";
     if (u.menge === undefined) u.menge = 0;
@@ -369,7 +370,9 @@ function persist() {
       const time = new Date().toLocaleTimeString("de-DE");
       setSaveStatus(`Zuletzt automatisch gespeichert um ${time} · Autoladen beim nächsten Öffnen aktiv`);
     } catch (e) {
-      if (e instanceof NotLoggedInError) {
+      if (e instanceof ConflictError) {
+        await reloadAfterConflict();
+      } else if (e instanceof NotLoggedInError) {
         setSaveStatus("Sitzung abgelaufen — bitte in der Tools-Übersicht neu anmelden.");
       } else {
         console.error("Speichern fehlgeschlagen", e);
@@ -377,6 +380,25 @@ function persist() {
       }
     }
   }, 300);
+}
+
+// Konflikt beim Speichern (nur Gateway-Modus): ein anderes Gerät hat zwischen-
+// zeitlich gespeichert. Remote-Stand übernehmen und neu rendern — die letzte
+// eigene Eingabe geht dabei sichtbar verloren (Hinweis unten), statt dass die
+// Änderung des anderen Geräts stillschweigend überschrieben wird.
+async function reloadAfterConflict() {
+  try {
+    const data = await gatewayLoad();
+    appData = data && Array.isArray(data.materials) ? data : { materials: [], teams: [] };
+    migrateData(appData);
+    renderAll();
+    const activeTabBtn = document.querySelector("nav button.active");
+    if (activeTabBtn) switchTab(activeTabBtn.dataset.tab);
+    setSaveStatus("⚠️ Anderes Gerät hat gleichzeitig gespeichert — Stand neu geladen, letzte Eingabe bitte prüfen.");
+  } catch (e) {
+    console.error("Neu laden nach Konflikt fehlgeschlagen", e);
+    setSaveStatus("Speicher-Konflikt — bitte Seite neu laden.");
+  }
 }
 
 // ---------- Navigation ----------
@@ -958,7 +980,7 @@ function buchUm({ richtung, materialId, menge, ziel, kommentar }) {
   }
 
   appData.umbuchungen.push({
-    id: uuid(), datum: todayStr(), name: source.name, kategorie: source.kategorie,
+    id: uuid(), datum: todayStr(), ts: new Date().toISOString(), name: source.name, kategorie: source.kategorie,
     menge, richtung, ziel, kommentar: kommentar || ""
   });
   persist();
@@ -1001,7 +1023,9 @@ function deleteUmbuchung(id) {
 function renderUmbuchungsLog() {
   const empty = document.getElementById("umbuchung-log-empty");
   const container = document.getElementById("umbuchung-log-list");
-  let list = appData.umbuchungen.slice().sort((a, b) => b.datum.localeCompare(a.datum));
+  // Innerhalb desselben Tages nach Uhrzeit (ts) sortieren — sonst stehen die
+  // Einträge eines Tages älteste-zuerst, während die Tage neueste-zuerst sind.
+  let list = appData.umbuchungen.slice().sort((a, b) => b.datum.localeCompare(a.datum) || (b.ts || "").localeCompare(a.ts || ""));
   if (umbuchungFilterZiel) list = list.filter((u) => u.ziel === umbuchungFilterZiel);
   if (umbuchungFilterRichtung) list = list.filter((u) => u.richtung === umbuchungFilterRichtung);
   empty.style.display = list.length === 0 ? "block" : "none";
@@ -1667,7 +1691,7 @@ function renderInventurErfassung() {
         <span>${escapeHtml(p.kategorie)}</span>
         <span>${escapeHtml(p.soll)}</span>
         <input type="number" data-field="ist" value="${escapeHtml(p.ist)}" />
-        <span>${diff > 0 ? "+" : ""}${diff}</span>
+        <span data-diff-cell>${diff > 0 ? "+" : ""}${diff}</span>
         <label class="checkbox-label"><input type="checkbox" data-field="uebernommen" ${p.uebernommen ? "checked" : ""} ${diff === 0 ? "disabled" : ""} /></label>
       </div>
     `;
@@ -1685,10 +1709,22 @@ function renderInventurErfassung() {
 }
 
 function commitInventurIstEdit(input) {
-  const idx = Number(input.closest(".inventur-row").dataset.index);
-  inventurAktiv.positionen[idx].ist = input.value;
-  inventurAktiv.positionen[idx].uebernommen = false;
-  renderInventurErfassung();
+  const row = input.closest(".inventur-row");
+  const idx = Number(row.dataset.index);
+  const p = inventurAktiv.positionen[idx];
+  p.ist = input.value;
+  p.uebernommen = false;
+  // Kein komplettes Re-Render: das würde bei jedem Wert den Fokus aus dem Feld
+  // reißen (Durcharbeiten der Ist-Spalte per Tab). Nur Diff-Zelle + Checkbox anpassen.
+  const diff = (Number(p.ist) || 0) - (Number(p.soll) || 0);
+  row.classList.toggle("diff", diff !== 0);
+  const diffCell = row.querySelector("[data-diff-cell]");
+  if (diffCell) diffCell.textContent = (diff > 0 ? "+" : "") + diff;
+  const cb = row.querySelector('input[data-field="uebernommen"]');
+  if (cb) {
+    cb.checked = false;
+    cb.disabled = diff === 0;
+  }
 }
 
 function finalizeInventur() {

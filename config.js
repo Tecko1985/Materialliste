@@ -1,6 +1,19 @@
-const APP_VERSION = "1.0";
+const APP_VERSION = "1.1";
 
 const APP_CHANGELOG = [
+  {
+    version: "1.1",
+    groups: [
+      {
+        title: "Stabilität & Datensicherheit",
+        items: [
+          "Konfliktschutz beim Speichern: Bearbeiten zwei Geräte gleichzeitig, wird der Konflikt erkannt und der aktuelle Stand neu geladen, statt dass Änderungen stillschweigend verloren gehen (zusammen mit dem Update der Tools-Übersicht-Anmeldung).",
+          "Umbuchungs-Protokoll: Einträge desselben Tages werden jetzt in der richtigen Reihenfolge (neueste zuerst) angezeigt.",
+          "Inventur: Beim Eintragen der Ist-Werte springt der Fokus nicht mehr aus dem Eingabefeld — die Ist-Spalte lässt sich per Tab durcharbeiten."
+        ]
+      }
+    ]
+  },
   {
     version: "1.0",
     groups: [
