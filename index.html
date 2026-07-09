@@ -1,0 +1,508 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🎒 Materialliste</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1a56a0" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="style.css?v=1.0" />
+</head>
+<body>
+
+<header>
+  <h1>🎒 Materialliste <span class="version-badge version-badge-link" id="version-badge" role="button" tabindex="0" title="Versionshistorie ansehen"></span></h1>
+  <a href="https://tecko1985.github.io/ToolsUebersicht/" class="back-to-dashboard">← Zurück zum Dashboard</a>
+  <div class="header-right">
+    <div class="file-status" id="file-status"><span class="dot"></span><span class="label">Nicht verbunden</span></div>
+    <img class="header-logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
+  </div>
+</header>
+
+<!-- Verbindungs-Screen -->
+<div class="connect-screen" id="connect-screen">
+  <div class="card">
+    <h2>Datendatei verbinden</h2>
+    <p>
+      Die Materialdaten werden in einer JSON-Datei in diesem Nextcloud-Ordner gespeichert
+      (synct automatisch). Öffne eine vorhandene Datei oder lege eine neue an.
+    </p>
+    <div class="btn-row" id="connect-default-actions">
+      <button class="btn" id="btn-connect-existing">Vorhandene Datei öffnen</button>
+      <button class="btn secondary" id="btn-connect-new">Neue Datei erstellen</button>
+    </div>
+    <div id="reconnect-block" style="display:none;">
+      <p class="muted" style="margin-bottom:16px;">
+        Es ist bereits eine Datendatei hinterlegt. Der Browser möchte den Zugriff nur kurz erneut bestätigt haben
+        (kein erneutes Auswählen der Datei nötig).
+      </p>
+      <div class="btn-row">
+        <button class="btn" id="btn-reconnect">Zugriff erneut erlauben</button>
+        <button class="btn secondary" id="btn-reconnect-other">Andere Datei wählen</button>
+      </div>
+    </div>
+    <p class="muted" id="fs-api-warning" style="display:none; margin-top:16px;">
+      Dein Browser unterstützt die File-System-API nicht (z.B. auf dem Handy). Nutze stattdessen
+      die automatische Nextcloud-Synchronisierung unten – dafür einmalig in der Tools-Übersicht anmelden.
+    </p>
+  </div>
+
+  <div class="card" id="cloud-login-section" style="margin-top:16px;">
+    <h2>Automatische Nextcloud-Synchronisierung (auch am Handy)</h2>
+    <p class="muted" style="margin-bottom:14px;">
+      Melde dich einmalig in der <strong>Tools-Übersicht</strong> an – danach werden die Materialdaten
+      automatisch aus der Vereins-Nextcloud geladen und gespeichert, ganz ohne Zugangsdaten oder
+      App-Passwort auf diesem Gerät. Funktioniert auch mobil.
+    </p>
+    <div class="btn-row" style="justify-content:flex-start;">
+      <a class="btn" href="https://tecko1985.github.io/ToolsUebersicht/">Zur Tools-Übersicht &amp; anmelden</a>
+    </div>
+    <p class="muted" id="cloud-error" style="display:none; color:#c0392b; margin-top:12px;"></p>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app-shell" style="display:none;">
+  <nav>
+    <button data-tab="liste" class="active">Materialliste</button>
+    <button data-tab="hinzufuegen">Hinzufügen</button>
+    <button data-tab="mannschaften">Mannschaften</button>
+    <button data-tab="reserve">Reserve &amp; Umbuchung</button>
+    <button data-tab="inventur">Inventur</button>
+    <button data-tab="einstellungen" style="margin-left:auto;">Einstellungen</button>
+  </nav>
+
+  <main>
+
+    <!-- Materialliste -->
+    <section class="tab-section active" id="tab-liste">
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <h2 style="margin-bottom:0;">Materialübersicht</h2>
+          <button class="btn danger small" id="btn-delete-all-materials" type="button">Materialliste komplett löschen</button>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; margin-top:14px;">
+          <div class="form-field" style="max-width:220px;">
+            <label>Suche</label>
+            <input type="text" id="liste-search-input" placeholder="Name…" />
+          </div>
+          <div class="form-field" style="max-width:220px;">
+            <label>Mannschaft</label>
+            <select id="liste-mannschaft-filter"><option value="">Alle Mannschaften</option></select>
+          </div>
+          <div class="form-field" style="max-width:220px;">
+            <label>Kategorie</label>
+            <select id="liste-kategorie-filter"><option value="">Alle Kategorien</option></select>
+          </div>
+          <div class="form-field" style="max-width:220px;">
+            <label>Sortieren nach</label>
+            <select id="liste-sort-select">
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="menge-desc">Menge (meiste zuerst)</option>
+              <option value="menge-asc">Menge (wenigste zuerst)</option>
+            </select>
+          </div>
+        </div>
+        <p class="muted" style="margin-bottom:10px;">Gruppiert nach Mannschaft. Felder direkt anklicken und bearbeiten – die Änderung wird beim Verlassen des Feldes übernommen.</p>
+        <div class="empty-state" id="liste-empty" style="display:none;">Noch kein Material angelegt. Wechsle zu "Hinzufügen".</div>
+        <div id="liste-groups"></div>
+      </div>
+    </section>
+
+    <!-- Mannschaften -->
+    <section class="tab-section" id="tab-mannschaften">
+      <div class="card">
+        <h2>Neue Mannschaft anlegen</h2>
+        <form id="team-form">
+          <div class="form-grid">
+            <div class="form-field"><label>Name *</label><input type="text" id="team-name" placeholder="z.B. U19, D-Jugend" required /></div>
+          </div>
+          <button class="btn" type="submit">Mannschaft hinzufügen</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Mannschaftsliste</h2>
+        <p class="muted" style="margin-bottom:10px;">
+          Name direkt anklicken und bearbeiten – die Änderung wirkt sich auf alle zugeordneten Material-Einträge aus.
+        </p>
+        <div class="empty-state" id="teams-empty" style="display:none;">Noch keine Mannschaft angelegt.</div>
+        <div class="team-edit-row team-edit-header">
+          <span>Name</span><span>Material-Einträge</span><span></span>
+        </div>
+        <div class="player-grid" id="teams-list"></div>
+      </div>
+    </section>
+
+    <!-- Hinzufügen -->
+    <section class="tab-section" id="tab-hinzufuegen">
+      <div class="card">
+        <h2>Material hinzufügen</h2>
+        <form id="material-form">
+
+          <div class="form-field" style="margin-bottom:16px;">
+            <label>Art</label>
+            <div class="btn-row" style="justify-content:flex-start; gap:20px;">
+              <label class="checkbox-label"><input type="checkbox" id="chk-trikotsatz" /> Trikotsatz</label>
+              <label class="checkbox-label" id="mtype-baelle-label"><input type="checkbox" id="chk-baelle" /> Bälle</label>
+              <label class="checkbox-label" id="mtype-leibchen-label"><input type="checkbox" id="chk-leibchen" /> Leibchen</label>
+              <label class="checkbox-label" id="mtype-sonstiges-label"><input type="checkbox" id="chk-sonstiges" /> Sonstiges</label>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-bottom:16px;">
+            <div class="form-field">
+              <label>Mannschaft</label>
+              <div class="number-grid" id="mannschaft-checkbox-grid"></div>
+            </div>
+            <div class="form-field">
+              <label>Zuständiger Trainer</label>
+              <input type="text" id="m-mannschaft-trainer" placeholder="Name des Trainers" />
+            </div>
+          </div>
+
+          <!-- Generisch (Standardfall) -->
+          <div class="form-grid" id="mform-generic">
+            <div class="form-field"><label>Name *</label><input type="text" id="m-name" /></div>
+            <div class="form-field"><label>Kategorie</label><input type="text" id="m-kategorie" placeholder="z.B. Bekleidung, Sportgerät" /></div>
+            <div class="form-field"><label>Menge</label><input type="number" id="m-menge" min="0" step="1" /></div>
+            <div class="form-field"><label>Zustand</label><input type="text" id="m-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+          </div>
+
+          <!-- Bälle -->
+          <div class="form-grid" id="mform-baelle" style="display:none;">
+            <div class="form-field"><label>Menge</label><input type="number" id="mb-menge" min="0" step="1" /></div>
+            <div class="form-field"><label>Zustand</label><input type="text" id="mb-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+          </div>
+
+          <!-- Leibchen -->
+          <div class="form-grid" id="mform-leibchen" style="display:none;">
+            <div class="form-field"><label>Farbe</label><input type="text" id="ml-farbe" placeholder="z.B. Grau, Rot, Gelb" /></div>
+            <div class="form-field"><label>Menge</label><input type="number" id="ml-menge" min="0" step="1" /></div>
+            <div class="form-field"><label>Zustand</label><input type="text" id="ml-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+          </div>
+
+          <!-- Trikotsatz -->
+          <div id="mform-trikotsatz" style="display:none;">
+            <div class="form-grid">
+              <div class="form-field"><label>Bezeichnung</label><input type="text" id="mt-bezeichnung" placeholder="z.B. Blau KD Sports" /></div>
+              <div class="form-field"><label>Zustand</label><input type="text" id="mt-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+            </div>
+            <div class="form-field" style="margin-bottom:14px;">
+              <label>Trikot-Nummern</label>
+              <div class="number-grid" id="trikot-number-grid"></div>
+            </div>
+            <div class="form-field" style="margin-bottom:10px;">
+              <label class="checkbox-label"><input type="checkbox" id="chk-hosen-nummern" /> Hosen haben Nummern</label>
+            </div>
+            <div class="form-grid" id="mt-hosen-field">
+              <div class="form-field"><label>Hosen (Menge)</label><input type="number" id="mt-hosen" min="0" step="1" /></div>
+            </div>
+            <div class="form-field" id="hosen-nummern-wrap" style="display:none; margin-bottom:14px;">
+              <label>Hosen-Nummern</label>
+              <div class="number-grid" id="hosen-number-grid"></div>
+            </div>
+            <div class="form-grid">
+              <div class="form-field"><label>Stutzen (Menge)</label><input type="number" id="mt-stutzen" min="0" step="1" /></div>
+            </div>
+          </div>
+
+          <button class="btn" type="submit" style="margin-top:6px;">Material hinzufügen</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <details id="smart-import-details">
+          <summary><h2 style="display:inline;">Text-Import (automatische Erkennung)</h2></summary>
+          <p class="muted" style="margin:10px 0;">
+            Füge beliebige Notizen oder Listen ein – z.B. Satz-Überschriften wie "Blau KD Sports", Mengenangaben wie
+            "9 Hosen" oder "13 x Stutzen", durch Komma getrennte Trikotnummern, "Keine Stutzen" oder Leibchen-Farben
+            wie "4 x Grau". Auch klassische Tab-getrennte Excel-Zeilen werden erkannt. Klicke auf "Analysieren" – das
+            Tool erstellt daraus einen Entwurf, den du vor der Übernahme noch prüfen und anpassen kannst.
+          </p>
+          <textarea id="smart-import-input" rows="12" placeholder="Trikot bestand U19&#10;&#10;Blau KD Sports (Ausweichsatz)&#10;9 Hosen&#10;1, 8, 11, 12, 5, 6, 7&#10;Keine Stutzen"></textarea>
+          <div class="btn-row" style="justify-content:flex-start; margin-top:10px;">
+            <button class="btn secondary" id="btn-smart-analyze" type="button">Analysieren</button>
+          </div>
+
+          <div id="smart-import-preview" style="display:none; margin-top:18px;">
+            <p class="muted" style="margin-bottom:10px;">
+              Entwurf prüfen und bei Bedarf direkt in den Feldern anpassen. Zeilen abwählen, um sie nicht zu übernehmen.
+            </p>
+            <div class="material-edit-row material-edit-header with-checkbox">
+              <span></span><span>Name</span><span>Kategorie</span><span>Mannschaft</span><span>Menge</span><span>Einheit</span><span>Standort</span><span>Zustand</span>
+            </div>
+            <div class="player-grid" id="smart-import-rows"></div>
+            <p class="muted" id="smart-import-unrecognized" style="margin-top:10px;"></p>
+            <div class="btn-row" style="justify-content:flex-start; margin-top:14px;">
+              <button class="btn success" id="btn-smart-commit" type="button">Ausgewählte übernehmen</button>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- Reserve & Umbuchung -->
+    <section class="tab-section" id="tab-reserve">
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <h2 style="margin-bottom:0;">Reserve-Material</h2>
+        </div>
+        <p class="muted" style="margin:10px 0;">
+          Eigener Vorratsbestand, unabhängig von den Mannschaften – wird genutzt, um Verluste bei Mannschaften
+          auszugleichen oder Überschuss aufzunehmen. Felder direkt anklicken und bearbeiten.
+        </p>
+        <div class="empty-state" id="reserve-empty" style="display:none;">Noch kein Reserve-Material angelegt.</div>
+        <div id="reserve-groups"></div>
+        <details id="reserve-add-details" style="margin-top:16px;">
+          <summary><h3 style="display:inline;">Reserve-Material hinzufügen</h3></summary>
+          <form id="reserve-form" style="margin-top:12px;">
+
+            <div class="form-field" style="margin-bottom:16px;">
+              <label>Art</label>
+              <div class="btn-row" style="justify-content:flex-start; gap:20px;">
+                <label class="checkbox-label"><input type="checkbox" id="r-chk-trikotsatz" /> Trikotsatz</label>
+                <label class="checkbox-label" id="r-mtype-baelle-label"><input type="checkbox" id="r-chk-baelle" /> Bälle</label>
+                <label class="checkbox-label" id="r-mtype-leibchen-label"><input type="checkbox" id="r-chk-leibchen" /> Leibchen</label>
+                <label class="checkbox-label" id="r-mtype-sonstiges-label"><input type="checkbox" id="r-chk-sonstiges" /> Sonstiges</label>
+              </div>
+            </div>
+
+            <!-- Generisch (Standardfall) -->
+            <div class="form-grid" id="r-mform-generic">
+              <div class="form-field"><label>Name *</label><input type="text" id="r-name" /></div>
+              <div class="form-field"><label>Kategorie</label><input type="text" id="r-kategorie" placeholder="z.B. Bekleidung, Sportgerät" /></div>
+              <div class="form-field"><label>Menge</label><input type="number" id="r-menge" min="0" step="1" /></div>
+              <div class="form-field"><label>Zustand</label><input type="text" id="r-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+            </div>
+
+            <!-- Bälle -->
+            <div class="form-grid" id="r-mform-baelle" style="display:none;">
+              <div class="form-field"><label>Menge</label><input type="number" id="r-mb-menge" min="0" step="1" /></div>
+              <div class="form-field"><label>Zustand</label><input type="text" id="r-mb-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+            </div>
+
+            <!-- Leibchen -->
+            <div class="form-grid" id="r-mform-leibchen" style="display:none;">
+              <div class="form-field"><label>Farbe</label><input type="text" id="r-ml-farbe" placeholder="z.B. Grau, Rot, Gelb" /></div>
+              <div class="form-field"><label>Menge</label><input type="number" id="r-ml-menge" min="0" step="1" /></div>
+              <div class="form-field"><label>Zustand</label><input type="text" id="r-ml-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+            </div>
+
+            <!-- Trikotsatz -->
+            <div id="r-mform-trikotsatz" style="display:none;">
+              <div class="form-grid">
+                <div class="form-field"><label>Bezeichnung</label><input type="text" id="r-mt-bezeichnung" placeholder="z.B. Blau KD Sports" /></div>
+                <div class="form-field"><label>Zustand</label><input type="text" id="r-mt-zustand" placeholder="z.B. Neu, Gut, Defekt" /></div>
+              </div>
+              <div class="form-field" style="margin-bottom:14px;">
+                <label>Trikot-Nummern</label>
+                <div class="number-grid" id="r-trikot-number-grid"></div>
+              </div>
+              <div class="form-field" style="margin-bottom:10px;">
+                <label class="checkbox-label"><input type="checkbox" id="r-chk-hosen-nummern" /> Hosen haben Nummern</label>
+              </div>
+              <div class="form-grid" id="r-mt-hosen-field">
+                <div class="form-field"><label>Hosen (Menge)</label><input type="number" id="r-mt-hosen" min="0" step="1" /></div>
+              </div>
+              <div class="form-field" id="r-hosen-nummern-wrap" style="display:none; margin-bottom:14px;">
+                <label>Hosen-Nummern</label>
+                <div class="number-grid" id="r-hosen-number-grid"></div>
+              </div>
+              <div class="form-grid">
+                <div class="form-field"><label>Stutzen (Menge)</label><input type="number" id="r-mt-stutzen" min="0" step="1" /></div>
+              </div>
+            </div>
+
+            <button class="btn" type="submit" style="margin-top:6px;">Reserve-Material hinzufügen</button>
+          </form>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2>Umbuchung</h2>
+        <p class="muted" style="margin-bottom:14px;">
+          Material zwischen Reserve und einer Mannschaft verschieben – z.B. um einen Verlust bei einer Mannschaft
+          aus der Reserve auszugleichen, oder umgekehrt Überschuss einer Mannschaft in die Reserve zurückzugeben.
+        </p>
+        <form id="umbuchung-form">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Richtung *</label>
+              <select id="ub-richtung">
+                <option value="reserve->team">Reserve → Mannschaft</option>
+                <option value="team->reserve">Mannschaft → Reserve</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Mannschaft *</label>
+              <select id="ub-mannschaft" required></select>
+            </div>
+            <div class="form-field">
+              <label>Material *</label>
+              <select id="ub-material" required></select>
+            </div>
+            <div class="form-field">
+              <label>Menge *</label>
+              <input type="number" id="ub-menge" min="1" step="1" required />
+            </div>
+            <div class="form-field" style="flex:2; min-width:220px;">
+              <label>Kommentar</label>
+              <input type="text" id="ub-kommentar" placeholder="z.B. Grund der Umbuchung" />
+            </div>
+          </div>
+          <button class="btn" type="submit">Umbuchen</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Umbuchungsprotokoll</h2>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px;">
+          <div class="form-field" style="max-width:220px;">
+            <label>Mannschaft</label>
+            <select id="ub-log-mannschaft-filter"><option value="">Alle Mannschaften</option></select>
+          </div>
+          <div class="form-field" style="max-width:220px;">
+            <label>Richtung</label>
+            <select id="ub-log-richtung-filter">
+              <option value="">Alle Richtungen</option>
+              <option value="reserve->team">Reserve → Mannschaft</option>
+              <option value="team->reserve">Mannschaft → Reserve</option>
+            </select>
+          </div>
+        </div>
+        <div class="empty-state" id="umbuchung-log-empty" style="display:none;">Noch keine Umbuchung erfasst.</div>
+        <div id="umbuchung-log-list"></div>
+      </div>
+    </section>
+
+    <!-- Inventur -->
+    <section class="tab-section" id="tab-inventur">
+      <div class="card">
+        <h2>Neue Inventur</h2>
+        <p class="muted" style="margin-bottom:14px;">
+          Mannschaft oder Reserve wählen, Ist-Menge je Position erfassen und bei Abweichung zum Soll-Bestand
+          entscheiden, ob der neue Wert übernommen wird. Beim Abschließen wird der Stand als Stichtag gespeichert.
+        </p>
+        <div class="form-grid" id="inventur-start-row">
+          <div class="form-field">
+            <label>Mannschaft / Reserve</label>
+            <select id="inventur-ziel-select"></select>
+          </div>
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;" id="inventur-start-actions">
+          <button class="btn" id="btn-inventur-start" type="button">Inventur starten</button>
+        </div>
+
+        <div id="inventur-erfassung" style="display:none; margin-top:18px;">
+          <div class="material-edit-row material-edit-header inventur-row">
+            <span>Name</span><span>Kategorie</span><span>Soll</span><span>Ist</span><span>Diff.</span><span>Übernehmen</span>
+          </div>
+          <div class="player-grid" id="inventur-positionen"></div>
+          <div class="btn-row" style="justify-content:flex-start; margin-top:14px;">
+            <button class="btn success" id="btn-inventur-abschliessen" type="button">Inventur abschließen</button>
+            <button class="btn secondary" id="btn-inventur-abbrechen" type="button">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Inventur-Historie</h2>
+        <div class="empty-state" id="inventur-historie-empty" style="display:none;">Noch keine Inventur durchgeführt.</div>
+        <div id="inventur-historie-list"></div>
+      </div>
+
+      <div class="card">
+        <details id="vergleich-details">
+          <summary><h2 style="display:inline;">Vergleich zweier Stichtage</h2></summary>
+          <div class="form-grid" style="margin-top:12px;">
+            <div class="form-field">
+              <label>Mannschaft / Reserve</label>
+              <select id="vergleich-ziel-select"></select>
+            </div>
+            <div class="form-field">
+              <label>Stichtag A</label>
+              <select id="vergleich-datum-a"></select>
+            </div>
+            <div class="form-field">
+              <label>Stichtag B</label>
+              <select id="vergleich-datum-b"></select>
+            </div>
+          </div>
+          <div class="empty-state" id="vergleich-empty" style="display:none;">
+            Bitte zwei vorhandene Stichtage derselben Mannschaft/Reserve wählen.
+          </div>
+          <div id="vergleich-result"></div>
+        </details>
+      </div>
+    </section>
+
+    <!-- Einstellungen -->
+    <section class="tab-section" id="tab-einstellungen">
+      <div class="card">
+        <h3>Speicherort</h3>
+        <p class="muted" style="margin-bottom:6px;">
+          Datei: <strong id="settings-file-name">—</strong>
+        </p>
+        <p class="muted" style="margin-bottom:10px;" id="settings-save-status">
+          Autospeichern aktiv · Autoladen beim nächsten Öffnen aktiv
+        </p>
+        <div class="btn-row" style="justify-content:flex-start;" id="settings-fs-actions">
+          <button class="btn secondary small" id="btn-change-location-existing">Andere Datei öffnen…</button>
+          <button class="btn secondary small" id="btn-change-location-new">Aktuelle Daten an neuem Ort speichern…</button>
+        </div>
+        <div class="btn-row" style="justify-content:flex-start; display:none;" id="settings-webdav-actions">
+          <button class="btn secondary small" id="btn-webdav-disconnect">Nextcloud-Verbindung trennen</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Daten-Sicherung</h3>
+        <p class="muted" style="margin-bottom:10px;">Zusätzliche Sicherheitskopie unabhängig von der verbundenen Datei.</p>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn secondary small" id="btn-export">JSON exportieren</button>
+          <button class="btn secondary small" id="btn-import">JSON importieren</button>
+          <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
+        </div>
+      </div>
+      <div class="card">
+        <h3>Material aus Excel importieren</h3>
+        <p class="muted" style="margin-bottom:10px;">
+          Importiert Material aus einer Excel-Datei (.xlsx). Es wird <strong>keine Spaltenüberschrift
+          benötigt</strong> – die Spalten müssen nur in dieser Reihenfolge stehen:
+          <strong>1. Name, 2. Kategorie, 3. Menge, 4. Einheit, 5. Standort, 6. Zustand</strong>.
+          Falls die erste Zeile doch Überschriften enthält, wird sie automatisch erkannt und übersprungen.
+        </p>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn secondary small" id="btn-import-excel">Excel-Datei wählen…</button>
+          <input type="file" id="import-excel-input" accept=".xlsx,.xls,.csv" style="display:none;" />
+        </div>
+        <p class="muted" id="settings-excel-import-status" style="margin-top:10px;"></p>
+      </div>
+      <div class="card">
+        <h3>Automatisches Backup</h3>
+        <p class="muted" style="margin-bottom:6px;">
+          Ordner: <strong id="settings-backup-folder-name">— kein Ordner gewählt —</strong>
+        </p>
+        <p class="muted" style="margin-bottom:10px;" id="settings-backup-status">
+          Bei jedem Start der App wird automatisch eine Sicherungskopie mit Datum im gewählten Ordner abgelegt.
+        </p>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn secondary small" id="btn-choose-backup-folder">Backup-Ordner wählen…</button>
+          <button class="btn secondary small" id="btn-backup-now">Jetzt sichern</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Versionshistorie <span class="version-badge" id="version-badge-2"></span></h3>
+        <div id="changelog-list"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="config.js?v=1.0"></script>
+<script src="db.js?v=1.0"></script>
+<script src="app.js?v=1.0"></script>
+</body>
+</html>
