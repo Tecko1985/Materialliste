@@ -6,6 +6,12 @@ let backupDirHandle = null;
 let storageMode = "fs"; // "fs" | "gateway"
 let autoBackupDoneThisSession = false;
 let saveTimer = null;
+let currentUser = null; // {username, isAdmin, groupIds, vorname, nachname, canEdit} -- nur im Gateway-Modus gesetzt
+
+// Im lokalen Datei-Modus (storageMode !== "gateway") gibt es kein Gruppen-Konzept --
+// wer die Datei lokal geöffnet hat, darf sie wie bisher komplett bearbeiten. Nur im
+// Gateway-Modus entscheidet das server-seitige Bearbeiten-Recht (editGroupIds).
+function canEdit() { return storageMode !== "gateway" || !!(currentUser && (currentUser.isAdmin || currentUser.canEdit)); }
 
 let listeSearchQuery = "";
 let listeKategorieFilter = "";
@@ -188,6 +194,7 @@ async function init() {
       migrateData(appData);
       await FileStore.setStorageMode("gateway");
       await FileStore.clearWebdavConfig(); // alte, im Klartext gespeicherte Zugangsdaten aufräumen
+      try { currentUser = await fetchMe(); } catch (_) { /* best effort, Name/Recht bleibt best-effort */ }
       startApp();
       return;
     } catch (e) {
@@ -527,6 +534,7 @@ function buildRenderGroups(items) {
 
 function setupDeleteAllButton() {
   document.getElementById("btn-delete-all-materials").addEventListener("click", () => {
+    if (!canEdit()) return;
     const count = appData.materials.length;
     if (count === 0) {
       alert("Die Materialliste ist bereits leer.");
@@ -646,6 +654,7 @@ function commitSatzTrainerEdit(input, list = appData.materials) {
 }
 
 function commitMaterialEdit(input) {
+  if (!canEdit()) return;
   const row = input.closest(".material-edit-row");
   const id = row.dataset.id;
   const material = appData.materials.find((m) => m.id === id);
@@ -658,6 +667,7 @@ function commitMaterialEdit(input) {
 }
 
 function deleteMaterial(id) {
+  if (!canEdit()) return;
   if (!confirm("Diesen Eintrag wirklich löschen?")) return;
   appData.materials = appData.materials.filter((m) => m.id !== id);
   persist();
@@ -670,6 +680,7 @@ function deleteMaterial(id) {
 function setupTeamForm() {
   document.getElementById("team-form").addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!canEdit()) return;
     const input = document.getElementById("team-name");
     const name = input.value.trim();
     if (!name) return;
@@ -714,6 +725,7 @@ function renderTeams() {
 }
 
 function commitTeamEdit(input) {
+  if (!canEdit()) return;
   const row = input.closest(".team-edit-row");
   const id = row.dataset.id;
   const team = appData.teams.find((t) => t.id === id);
@@ -750,6 +762,7 @@ function commitTeamEdit(input) {
 }
 
 function deleteTeam(id) {
+  if (!canEdit()) return;
   const team = appData.teams.find((t) => t.id === id);
   if (!team) return;
   const count = appData.materials.filter((m) => m.mannschaft === team.name).length;
@@ -797,6 +810,7 @@ function renderReserve() {
 }
 
 function commitReserveEdit(input) {
+  if (!canEdit()) return;
   const row = input.closest(".material-edit-row");
   const id = row.dataset.id;
   const item = appData.reserve.find((m) => m.id === id);
@@ -809,6 +823,7 @@ function commitReserveEdit(input) {
 }
 
 function deleteReserveItem(id) {
+  if (!canEdit()) return;
   if (!confirm("Diesen Reserve-Eintrag wirklich löschen?")) return;
   appData.reserve = appData.reserve.filter((m) => m.id !== id);
   persist();
@@ -822,6 +837,7 @@ function setupReserveForm() {
 
   document.getElementById("reserve-form").addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!canEdit()) return;
     const trikot = document.getElementById("r-chk-trikotsatz").checked;
     const baelle = document.getElementById("r-chk-baelle").checked;
     const leibchen = document.getElementById("r-chk-leibchen").checked;
@@ -964,6 +980,7 @@ function findOrCreateMatchingEntry(list, { name, kategorie, zustand, mannschaft 
 }
 
 function buchUm({ richtung, materialId, menge, ziel, kommentar }) {
+  if (!canEdit()) return;
   const sourceList = richtung === "reserve->team" ? appData.reserve : appData.materials;
   const source = sourceList.find((m) => m.id === materialId);
   if (!source) {
@@ -1020,6 +1037,7 @@ function populateUmbuchungSelects() {
 }
 
 function deleteUmbuchung(id) {
+  if (!canEdit()) return;
   if (!confirm("Diesen Umbuchungs-Eintrag wirklich aus dem Protokoll löschen? Der Materialbestand wird dadurch nicht zurückgebucht.")) return;
   appData.umbuchungen = appData.umbuchungen.filter((u) => u.id !== id);
   persist();
@@ -1192,6 +1210,7 @@ function setupMaterialForm() {
 
   document.getElementById("material-form").addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!canEdit()) return;
     const trikot = document.getElementById("chk-trikotsatz").checked;
     const baelle = document.getElementById("chk-baelle").checked;
     const leibchen = document.getElementById("chk-leibchen").checked;
@@ -1512,6 +1531,7 @@ function setupSmartImport() {
   });
 
   document.getElementById("btn-smart-commit").addEventListener("click", () => {
+    if (!canEdit()) return;
     const rows = document.querySelectorAll("#smart-import-rows .material-edit-row");
     let added = 0;
     rows.forEach((row) => {
@@ -1564,6 +1584,7 @@ function setupBackupButtons() {
   });
 
   document.getElementById("import-file-input").addEventListener("change", async (e) => {
+    if (!canEdit()) return;
     const file = e.target.files[0];
     if (!file) return;
     try {
@@ -1627,6 +1648,7 @@ function setupExcelImport() {
   });
 
   document.getElementById("import-excel-input").addEventListener("change", async (e) => {
+    if (!canEdit()) return;
     const file = e.target.files[0];
     const statusEl = document.getElementById("settings-excel-import-status");
     if (!file) return;
@@ -1734,6 +1756,7 @@ function commitInventurIstEdit(input) {
 }
 
 function finalizeInventur() {
+  if (!canEdit()) return;
   if (!inventurAktiv) return;
   if (!confirm("Inventur abschließen und als Stichtag speichern? Übernommene Abweichungen korrigieren den aktuellen Bestand.")) return;
   const sourceList = inventurAktiv.ziel === RESERVE_KEY ? appData.reserve : appData.materials;
