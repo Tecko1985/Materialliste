@@ -2,17 +2,6 @@ const APP_VERSION = "1.0";
 
 const APP_CHANGELOG = [
   {
-    version: "1.1",
-    groups: [
-      {
-        title: "Bearbeiten-Recht",
-        items: [
-          "Alle bearbeitenden Aktionen (Material/Team/Reserve anlegen-ändern-löschen, Umbuchen, Import, Inventur abschließen) jetzt (im Gateway-Modus) an das Bearbeiten-Recht der Gruppen-Verwaltung gekoppelt statt an reinen Tool-Zugriff. Im lokalen Datei-Modus unverändert."
-        ]
-      }
-    ]
-  },
-  {
     version: "1.0",
     groups: [
       {
@@ -21,6 +10,7 @@ const APP_CHANGELOG = [
           "Die Nextcloud-Synchronisierung läuft über die zentrale Anmeldung in der Tools-Übersicht: einmal dort anmelden, danach werden die Materialdaten automatisch geladen und gespeichert – auch am Handy, unabhängig davon ob vorher der lokale Datei-Modus genutzt wurde.",
           "Das frühere Verbindungsformular mit WebDAV-Adresse, Benutzername und App-Passwort entfällt komplett; es muss kein Passwort mehr auf dem Gerät eingegeben oder gespeichert werden.",
           "Nur wer das Tool in der Übersicht sehen darf, kann die Materialdaten öffnen (die Gruppen-Rechte werden serverseitig geprüft).",
+          "Bearbeitende Aktionen (Material/Team/Reserve anlegen-ändern-löschen, Umbuchen, Import, Inventur abschließen) sind zusätzlich an das Bearbeiten-Recht der Gruppen-Verwaltung gekoppelt statt an reinen Tool-Zugriff (im Gateway-Modus; im lokalen Datei-Modus unverändert).",
           "Konfliktschutz beim Speichern: Bearbeiten zwei Geräte gleichzeitig, wird der Konflikt erkannt und der aktuelle Stand neu geladen, statt dass Änderungen stillschweigend verloren gehen."
         ]
       },
