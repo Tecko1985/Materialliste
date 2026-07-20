@@ -2,6 +2,18 @@ const APP_VERSION = "1.0";
 
 const APP_CHANGELOG = [
   {
+    version: "1.1",
+    groups: [
+      {
+        title: "Speichern",
+        items: [
+          "Beim zügigen Bearbeiten – etwa Menge, Trainer oder Zustand mehrerer Zeilen direkt nacheinander ändern, mehrere Materialien hinzufügen, umbuchen oder eine Inventur erfassen – erschien wiederholt die Meldung, die Daten seien zwischenzeitlich auf einem anderen Gerät geändert worden, obwohl niemand sonst gearbeitet hat. Die zuletzt gemachte Eingabe ging dabei verloren, weil der Stand neu geladen wurde.",
+          "Ursache war, dass mehrere Speichervorgänge gleichzeitig unterwegs sein konnten. Jetzt wird immer nur ein Speichervorgang gleichzeitig ausgeführt; Änderungen, die währenddessen gemacht werden, werden gesammelt und unmittelbar danach mitgespeichert."
+        ]
+      }
+    ]
+  },
+  {
     version: "1.0",
     groups: [
       {
