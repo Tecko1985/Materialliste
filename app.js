@@ -452,9 +452,9 @@ function setupNav() {
   });
 
   const versionBadgeHeader = document.getElementById("version-badge");
-  versionBadgeHeader.addEventListener("click", () => switchTab("einstellungen"));
+  versionBadgeHeader.addEventListener("click", () => switchTab("info"));
   versionBadgeHeader.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); switchTab("einstellungen"); }
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); switchTab("info"); }
   });
 }
 
