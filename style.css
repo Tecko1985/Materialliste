@@ -425,3 +425,8 @@ table tr:hover td { background: var(--gray); }
   .diff-row { grid-template-columns: 1fr 1fr; }
   .diff-row.diff-header { display: none; }
 }
+
+/* Rechte Nav-Gruppe (Einstellungen/Verwaltung + Info). Das margin haengt
+   am Wrapper, damit die Gruppe rechts bleibt, auch wenn einzelne Buttons
+   fuer Nicht-Admins ausgeblendet sind. */
+nav .nav-right { margin-left: auto; display: flex; gap: inherit; }
