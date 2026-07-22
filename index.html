@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
@@ -6,7 +6,9 @@
 <title>🎒 Materialliste</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#1a56a0" />
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Die Excel-Bibliothek (861 KB roh) wird erst beim Excel-Import geladen, siehe
+     ladeXlsx() in app.js. Fest im <head> hielt sie jeden Seitenaufruf auf,
+     obwohl sie nur an einer einzigen Stelle gebraucht wird. -->
 <link rel="stylesheet" href="style.css?v=1.1" />
 </head>
 <body>
@@ -513,7 +515,7 @@
 </div>
 
 <script src="config.js?v=1.0"></script>
-<script src="db.js?v=1.0"></script>
-<script src="app.js?v=1.1"></script>
+<script src="db.js?v=1.1"></script>
+<script src="app.js?v=1.2"></script>
 </body>
 </html>
