@@ -61,7 +61,8 @@ const APP_CHANGELOG = [
           "Speicherort: automatisch Nextcloud über die zentrale Anmeldung, alternativ (ohne Anmeldung) eine lokale Datei per Datei-Picker mit dauerhaft gemerkter Zugriffsberechtigung.",
           "Automatisches, datiertes Backup in einem wählbaren Ordner bei jedem App-Start.",
           "Zusätzlicher manueller JSON-Export/Import als Sicherheitskopie.",
-          "Import aus Excel-Dateien (.xlsx) ohne benötigte Spaltenüberschrift."
+          "Import aus Excel-Dateien (.xlsx) ohne benötigte Spaltenüberschrift.",
+          "Rechte-Stufen im Nextcloud-Modus: der JSON-Export steht ab „Bearbeiten“ zur Verfügung; JSON-/Excel-Import, „Materialliste komplett löschen“ und das automatische Backup sind der Stufe „Administrieren“ vorbehalten (Häkchen im Sichtbarkeits-Panel der Tools-Übersicht). Im lokalen Datei-Modus gibt es keine Einschränkung."
         ]
       }
     ]
