@@ -62,7 +62,8 @@ const APP_CHANGELOG = [
           "Automatisches, datiertes Backup in einem wählbaren Ordner bei jedem App-Start.",
           "Zusätzlicher manueller JSON-Export/Import als Sicherheitskopie.",
           "Import aus Excel-Dateien (.xlsx) ohne benötigte Spaltenüberschrift.",
-          "Rechte-Stufen im Nextcloud-Modus: der JSON-Export steht ab „Bearbeiten“ zur Verfügung; JSON-/Excel-Import, „Materialliste komplett löschen“ und das automatische Backup sind der Stufe „Administrieren“ vorbehalten (Häkchen im Sichtbarkeits-Panel der Tools-Übersicht). Im lokalen Datei-Modus gibt es keine Einschränkung."
+          "Rechte-Stufen im Nextcloud-Modus: der JSON-Export steht ab „Bearbeiten“ zur Verfügung; JSON-/Excel-Import, „Materialliste komplett löschen“ und das automatische Backup sind der Stufe „Administrieren“ vorbehalten (Häkchen im Sichtbarkeits-Panel der Tools-Übersicht). Im lokalen Datei-Modus gibt es keine Einschränkung.",
+          "Nur-Seher (ohne Bearbeiten-Recht) bekommen die Bearbeiten-Bereiche jetzt ausgegraut und gesperrt: Hinzufügen, Mannschaften, Reserve/Umbuchung, Inventur und die direkt editierbaren Listenfelder. Suche, Filter und Sortierung bleiben normal nutzbar. Vorher wirkten die Felder editierbar, obwohl das Speichern ohnehin abgelehnt wurde."
         ]
       }
     ]

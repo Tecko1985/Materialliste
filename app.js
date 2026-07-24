@@ -25,6 +25,15 @@ function applyRechteVisibility() {
   const admin = canAdmin();
   document.querySelectorAll(".editor-only").forEach((el) => el.classList.toggle("hidden", !editable));
   document.querySelectorAll(".admin-only").forEach((el) => el.classList.toggle("hidden", !admin));
+  // Nur-Seher: Bearbeiten-Zonen (reine Edit-Tabs + die inline editierbaren Listenzeilen)
+  // per CSS ausgrauen/sperren -- "Sehen = wirklich nur sehen" (2026-07-24, Spec klare-
+  // rechte-trennung). Suche/Filter/Sortierung im Listenkopf bleiben aktiv, weil sie
+  // ausserhalb #liste-groups liegen.
+  ["tab-hinzufuegen", "tab-mannschaften", "tab-reserve", "tab-inventur", "liste-groups"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("edit-zone");
+  });
+  document.body.classList.toggle("is-viewonly", !editable);
 }
 
 let listeSearchQuery = "";
